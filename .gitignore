@@ -24,5 +24,9 @@ var/
 .installed.cfg
 *.egg
 
+
+# API keys
+google_vision.json
+
 # Our configuration files
 config.py
