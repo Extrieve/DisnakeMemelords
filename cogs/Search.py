@@ -70,21 +70,6 @@ class Search(commands.Cog):
 
             await msg.remove_reaction(reaction.emoji, user)
         
-        
-
-    
-    @commands.slash_command(name='testbuttons', description='Test the buttons')
-    async def testbuttons(self, inter):
-        # view = disnake.ui.View()
-        # arrow1 = Button(style=disnake.ButtonStyle.success, label='Left', emoji='◀')
-        # arrow2 = Button(style=disnake.ButtonStyle.success, label='Right', emoji='▶')
-        # view.add_item(item=arrow1)
-        # view.add_item(item=arrow2)
-        view = ScrollView()
-
-        await inter.response.send_message('Testing view', view=view)
-
-
 
 
 def setup(bot):
