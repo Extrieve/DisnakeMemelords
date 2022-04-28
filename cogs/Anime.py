@@ -114,7 +114,7 @@ class Anime(commands.Cog):
     async def ani_search(self, inter, query):
         
         if len(str(query)) < 4:
-            return await inter.response.send_message('Please provide a longer query', delete_after=5)
+            return await inter.response.send_message('Search result should be at least 4 characters', ephemeral=True)
 
         url = 'https://api.jikan.moe/v4/anime'
         params = {'q' : query}
@@ -182,7 +182,7 @@ class Anime(commands.Cog):
     async def manga_search(self, inter, query):
         
         if len(query) < 4:
-            return await inter.response.send_message('The manga name must be at least 4 characters long.', delete_after=5)
+            return await inter.response.send_message('Search result should be at least 4 characters', ephemeral=True)
 
         url = 'https://api.jikan.moe/v4/manga/'
         params = {'q' : query, 'page' : 1}
@@ -239,11 +239,11 @@ class Anime(commands.Cog):
     async def anime_theme(self, inter, query):
         
         if len(query) < 4:
-            return await inter.response.send_message('The anime name must be at least 4 characters long.', delete_after=5)
+            return await inter.response.send_message('Search result should be at least 4 characters', ephemeral=True)
 
         search = self.get_anime_data(query)
         if not search:
-            return await inter.response.send_message('Anime not found.')
+            return await inter.response.send_message(f'No results for {query}', ephemeral=True)
 
         available = []
         for entry in search:
