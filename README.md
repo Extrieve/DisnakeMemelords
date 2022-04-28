@@ -1,6 +1,6 @@
 # DisnakeMemelords
  Disnake discord bot for personal discord server.
-This project is a refactor/migration process from [Link text Here](https://github.com/Extrieve/MemelordsBot)
+This project is a refactor/migration process from [MemelordsBot](https://github.com/Extrieve/MemelordsBot)
 Moving this project from discord.py to Disnake because of new features such as slash_commands.
 
 Some of the major bot functionality includes:
