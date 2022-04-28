@@ -15,13 +15,13 @@ class GeneralPurpose(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-
     @commands.slash_command(name='avatar', description='Get the avatar of a user.')
     async def avatar(self, inter, *, user: disnake.Member = None):
         """Get the avatar of a user."""
         if user is None:
             user = inter.author
         await inter.send(user.avatar.url)
+        
 
     @commands.slash_command(description='Get random duck image')
     async def duck(self, inter):
