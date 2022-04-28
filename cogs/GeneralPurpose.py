@@ -28,7 +28,7 @@ class GeneralPurpose(commands.Cog):
     async def shorten(self, inter, url):
         
         if not validators.url(url):
-            return await inter.response.send_message('Please provide a valid URL')
+            return await inter.response.send_message('Please provide a valid URL', ephemeral=True)
 
         base_url = 'https://gotiny.cc/api'
         headers = {'Accept': 'application/json'}
@@ -36,7 +36,7 @@ class GeneralPurpose(commands.Cog):
         r = requests.post(base_url, headers=headers, json=params)
 
         if r.status_code != 200:
-            return await inter.response.send_message('Something went wrong', ephimeral=True)
+            return await inter.response.send_message('Something went wrong', ephemeral=True)
 
         data = json.loads(r.text)
         res = 'https://gotiny.cc/' + data[0]['code']
@@ -47,7 +47,7 @@ class GeneralPurpose(commands.Cog):
     async def meme_generator(self, inter, img_url: str, template: Templates):
         
         if not validators.url(img_url):
-            return await inter.response.send_message('Please provide a valid URL')
+            return await inter.response.send_message('Please provide a valid URL', ephemeral=True)
         
         base_url = "https://v1.api.amethyste.moe"
         headers = {'Authorization': f'Bearer {self.ame_token}'}
@@ -69,7 +69,7 @@ class GeneralPurpose(commands.Cog):
     async def qr(self, inter, qr_url): 
         
         if not validators.url(qr_url):
-            return await inter.response.send_message('Please provide a valid URL')
+            return await inter.response.send_message('Please provide a valid URL', ephemeral=True)
 
         url = 'http://api.qrserver.com/v1/read-qr-code/?fileurl='
         r = requests.get(url + qr_url)

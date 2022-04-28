@@ -28,5 +28,10 @@ var/
 # API keys
 google_vision.json
 
+# Images
+*.png
+*.jpg
+*.jpeg
+
 # Our configuration files
 config.py

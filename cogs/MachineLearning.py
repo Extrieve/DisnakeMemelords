@@ -54,7 +54,7 @@ class Machinelearning(commands.Cog):
         """Detects labels in the file located in Google Cloud Storage or on the
         Web."""
         if not validators.url(image_url):
-            return await inter.response.send_message('Please provide a valid URL')
+            return await inter.response.send_message('Please provide a valid URL', ephemeral=True)
 
         labels = self.detect_labels_uri(image_url)
         

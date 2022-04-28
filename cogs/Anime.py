@@ -265,15 +265,15 @@ class Anime(commands.Cog):
         try:
             choice = await self.bot.wait_for('message', check=check, timeout=30.0)
         except asyncio.TimeoutError:
-            return await inter.followup.send('You took too long to respond.')
+            return await inter.followup.send('You took too long to respond.', ephemeral=True)
 
         try:
             choice = int(choice.content) - 1
         except ValueError:
-            return await inter.followup.send('Please enter a valid number.')
+            return await inter.followup.send('Please enter a valid number.', ephemeral=True)
 
         if choice < 0 or choice >= len(available):
-            return await inter.followup.send('Please enter a valid number.')
+            return await inter.followup.send('Please enter a valid number.', ephemeral=True)
 
         ops, eds = self.get_anime_vid(available[choice][0])
 
@@ -283,11 +283,11 @@ class Anime(commands.Cog):
             try:
                 choice = await self.bot.wait_for('message', timeout=60, check=lambda m: m.author == inter.author and m.content.isdigit())
             except asyncio.TimeoutError:
-                return await inter.followup.send('You took too long to respond.')
+                return await inter.followup.send('You took too long to respond.', ephemeral=True)
             
             choice = int(choice.content) - 1
             if choice < 0 or choice >= len(ops):
-                return await inter.followup.send('Invalid choice.')
+                return await inter.followup.send('Invalid choice.', ephemeral=True)
             
             return await inter.followup.send(f'Opening #{choice + 1}):\n{ops[choice]}')
 
@@ -297,11 +297,11 @@ class Anime(commands.Cog):
             try:
                 choice = await self.bot.wait_for('message', timeout=60, check=lambda m: m.author == inter.author and m.content.isdigit())
             except asyncio.TimeoutError:
-                return await inter.followup.send('You took too long to respond.')
+                return await inter.followup.send('You took too long to respond.', ephemeral=True)
             
             choice = int(choice.content) - 1
             if choice < 0 or choice >= len(eds):
-                return await inter.followup.send('Invalid choice.')
+                return await inter.followup.send('Invalid choice.', ephemeral=True)
             
             return await inter.followup.send(f'Ending #{choice + 1}:\n{eds[choice]}')
 
@@ -325,7 +325,7 @@ class Anime(commands.Cog):
                 try:
                     choice = await self.bot.wait_for('message', timeout=60, check=lambda m: m.author == inter.author and m.content.isdigit())
                 except asyncio.TimeoutError:
-                    return await inter.followup.send('You took too long to respond.')
+                    return await inter.followup.send('You took too long to respond.', ephemeral=True)
                 
                 choice = int(choice.content) - 1
                 if choice < 0 or choice >= len(ops):
@@ -339,11 +339,11 @@ class Anime(commands.Cog):
                 try:
                     choice = await self.bot.wait_for('message', timeout=60, check=lambda m: m.author == inter.author and m.content.isdigit())
                 except asyncio.TimeoutError:
-                    return await inter.followup.send('You took too long to respond.')
+                    return await inter.followup.send('You took too long to respond.', ephemeral=True)
                 
                 choice = int(choice.content) - 1
                 if choice < 0 or choice >= len(eds):
-                    return await inter.followup.send('Invalid choice.')
+                    return await inter.followup.send('Invalid choice.', ephemeral=True)
                 
                 return await inter.followup.send(f'Ending #{choice+1}:\n{eds[choice]}')
     

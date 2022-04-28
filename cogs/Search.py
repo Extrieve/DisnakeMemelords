@@ -134,7 +134,7 @@ class Search(commands.Cog):
         response = requests.get(url, params=params)
 
         if response.status_code != 200:
-            return await inter.response.send_message('No results found.')
+            return await inter.response.send_message('No results found.', ephemeral=True)
 
         data = json.loads(response.text)
         
