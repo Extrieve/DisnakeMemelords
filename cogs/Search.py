@@ -24,9 +24,7 @@ class Search(commands.Cog):
 
 
     @commands.slash_command(name='define', description='Get the definition of a word')
-    async def define(self, inter, *, word):
-        if not word:
-            return await inter.response.send_message('Please provide a word')
+    async def define(self, inter, word):
 
         try:
             definition = self.getDefinition(word)
@@ -75,7 +73,7 @@ class Search(commands.Cog):
     @commands.slash_command(name='image-search', description='Search for an image')
     async def image_search(self, inter, query):
 
-        await inter.response.defer(with_message='Searching...')
+        await inter.response.defer(with_message='Searching...', ephimeral=True)
 
         params = {
             'q': query,
@@ -90,8 +88,6 @@ class Search(commands.Cog):
         if not results:
             return await inter.followup.send(f'No results found for {search}.', ephimeral=True)
     
-        # await ctx.send(results['images_results'][0]['original'])
-
         # Display the first image but allow the user to traverse the rest
         embed = disnake.Embed(title=f'{results["images_results"][0]["title"]}', url=results['images_results'][0]['original'], color=0x00ff00)
         embed.set_image(url=results['images_results'][0]['original'])
@@ -109,7 +105,7 @@ class Search(commands.Cog):
             try:
                 reaction, user = await self.bot.wait_for('reaction_add', timeout=60.0, check=check)
             except asyncio.TimeoutError:
-                return await inter.followup.send('Request timed out.', ephimeral=True)
+                return await inter.followup.send('Request timed out.')
             else:
                 if str(reaction.emoji) == '◀️':
                     index -= 1

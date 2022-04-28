@@ -4,6 +4,7 @@ import disnake
 import requests
 import json
 import sys, os
+import validators
 
 class GeneralPurpose(commands.Cog):
 
@@ -22,29 +23,31 @@ class GeneralPurpose(commands.Cog):
             user = inter.author
         await inter.send(user.avatar.url)
         
-
-    @commands.slash_command(description='Get random duck image')
-    async def duck(self, inter):
-        await inter.response.send_message(requests.get('https://random-d.uk/api/v1/random').json()['url'])
-
     
-    @commands.slash_command(description='Shorten any URL')
+    @commands.slash_command(name='shorten-url', description='Shorten any URL')
     async def shorten(self, inter, url):
         
-        if not url:
-            return await inter.response.send_message('Please provide a URL to shorten')
+        if not validators.url(url):
+            return await inter.response.send_message('Please provide a valid URL')
 
-        return await inter.response.send_message('Maintenance, back soon!')
-        # TODO: Finish the implementation with an API that's working
+        base_url = 'https://gotiny.cc/api'
+        headers = {'Accept': 'application/json'}
+        params = {'input': url}
+        r = requests.post(base_url, headers=headers, json=params)
+
+        if r.status_code != 200:
+            return await inter.response.send_message('Something went wrong', ephimeral=True)
+
+        data = json.loads(r.text)
+        res = 'https://gotiny.cc/' + data[0]['code']
+        await inter.response.send_message(res)
 
 
     @commands.slash_command(name='meme-generator' ,description='Generate a meme with the available templates')
-    async def meme_generator(self, inter, template: Templates=None, img_url: str=None):
-        if not template:
-            return await inter.response.send_message('Please provide a template')
+    async def meme_generator(self, inter, img_url: str, template: Templates):
         
-        if not img_url:
-            return await inter.response.send_message('Please provide an image URL')
+        if not validators.url(img_url):
+            return await inter.response.send_message('Please provide a valid URL')
         
         base_url = "https://v1.api.amethyste.moe"
         headers = {'Authorization': f'Bearer {self.ame_token}'}
@@ -64,8 +67,9 @@ class GeneralPurpose(commands.Cog):
 
     @commands.slash_command(description='Decode a QR code by providing a ')
     async def qr(self, inter, qr_url): 
-        if not url:
-            return await inter.response.send_message('Please provide a URL to decode')
+        
+        if not validators.url(qr_url):
+            return await inter.response.send_message('Please provide a valid URL')
 
         url = 'http://api.qrserver.com/v1/read-qr-code/?fileurl='
         r = requests.get(url + qr_url)
@@ -77,9 +81,6 @@ class GeneralPurpose(commands.Cog):
         return await inter.response.send_message(data[0]['symbol'][0]['data'])
 
     
-
-    
-
 
 def setup(bot):
     bot.add_cog(GeneralPurpose(bot))

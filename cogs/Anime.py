@@ -7,6 +7,7 @@ import asyncio
 import os, sys
 import csv
 import urllib.parse
+import validators
 
 class Anime(commands.Cog):
 
@@ -109,13 +110,11 @@ class Anime(commands.Cog):
         await inter.response.send_message(picture)
         
 
-    @commands.slash_command(name='anime-search', description='Search for an anime')
+    @commands.slash_command(name='anime-search', description='Get details of an anime')
     async def ani_search(self, inter, query):
-        if not query:
-            return await inter.response.send_message('Please provide a query')
         
         if len(str(query)) < 4:
-            return await inter.response.send_message('Please provide a longer query')
+            return await inter.response.send_message('Please provide a longer query', delete_after=5)
 
         url = 'https://api.jikan.moe/v4/anime'
         params = {'q' : query}
@@ -179,13 +178,11 @@ class Anime(commands.Cog):
         return await inter.followup.send(embed=embed)
 
 
-    @commands.slash_command(name='manga-search', description='Get anime opening/ending video')
+    @commands.slash_command(name='manga-search', description='Get details about a manga')
     async def manga_search(self, inter, query):
-        if not query:
-            return await inter.response.send_message('Please enter a manga name.')
         
         if len(query) < 4:
-            return await inter.response.send_message('The manga name must be at least 4 characters long.')
+            return await inter.response.send_message('The manga name must be at least 4 characters long.', delete_after=5)
 
         url = 'https://api.jikan.moe/v4/manga/'
         params = {'q' : query, 'page' : 1}
@@ -240,11 +237,9 @@ class Anime(commands.Cog):
 
     @commands.slash_command(name='anime-theme', description='Get anime opening/ending video')
     async def anime_theme(self, inter, query):
-        if not query:
-            return await inter.response.send_message('Please enter an anime name.')
         
         if len(query) < 4:
-            return await inter.response.send_message('The anime name must be at least 4 characters long.')
+            return await inter.response.send_message('The anime name must be at least 4 characters long.', delete_after=5)
 
         search = self.get_anime_data(query)
         if not search:
@@ -363,11 +358,8 @@ class Anime(commands.Cog):
         scene_url: URL of an anime scene, the url has to be the endpoint to an image file
         """
 
-        if not scene_url:
-            return await inter.response.send_message('Please enter an url with an anime image.')
-
-        if not scene_url.startswith('http'):
-            return await inter.response.send_message('Please enter a valid url.')
+        if not validators.url(scene_url):
+            return await inter.response.send_message('Invalid URL.')
 
         parse_url = urllib.parse.quote_plus(scene_url)
         response = requests.get(f"https://api.trace.moe/search?url={parse_url}").json()

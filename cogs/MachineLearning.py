@@ -4,6 +4,7 @@ from disnake.ext import commands
 import disnake
 import os, sys
 import requests
+import validators
 
 class Machinelearning(commands.Cog):
     """The description for Machinelearning goes here."""
@@ -52,6 +53,9 @@ class Machinelearning(commands.Cog):
     async def label(self, inter, image_url):
         """Detects labels in the file located in Google Cloud Storage or on the
         Web."""
+        if not validators.url(image_url):
+            return await inter.response.send_message('Please provide a valid URL')
+
         labels = self.detect_labels_uri(image_url)
         
         # Embed the labels
