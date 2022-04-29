@@ -81,7 +81,7 @@ class GeneralPurpose(commands.Cog):
         return await inter.response.send_message(data[0]['symbol'][0]['data'])
 
 
-    @commands.slash_command(name='remove-background', description='Remoe the background of an image')
+    @commands.slash_command(name='remove-background', description='Remove the background of an image')
     async def remove_background(self, inter, img_url: str):
         if not validators.url(img_url):
             return await inter.response.send_message('Please provide a valid URL', ephemeral=True)

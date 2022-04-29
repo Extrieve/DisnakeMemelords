@@ -98,7 +98,33 @@ class Anime(commands.Cog):
 
         return output
 
-    @commands.slash_command(name='ani-pic', description='Get an anime image/gif')
+
+    @commands.slash_command(name='anime-quote', description='Get a an anime quote.')
+    async def anime_quote(self, inter, *, anime_name: str=None, character_name: str=None):
+        """
+        Get a quote from an anime.
+        """
+        if anime_name:
+            return await inter.response.send_message('Coming soon!', ephemeral=True)
+        elif character_name:
+            return await inter.response.send_message('Coming soon!', ephemeral=True)
+
+        url = 'https://animechan.vercel.app/api/random'
+        r = requests.get(url)
+
+        if r.status_code!= 200:
+            return await inter.response.send_message('An error occurred while getting a quote.', ephemeral=True)
+
+        data = json.loads(r.text)
+        anime_name = data['anime']
+        character_name = data['character']
+        quote = data['quote']
+
+        embed = disnake.Embed(title=f'Anime: {anime_name}\nCharacter: {character_name}', description=quote)
+        return await inter.response.send_message(embed=embed)
+
+
+    @commands.slash_command(name='anime-picture', description='Get an anime image/gif')
     async def ani_pic(self, inter, category: Categories = None):
         if category is None:
             category = self.categories.random()
