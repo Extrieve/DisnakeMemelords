@@ -10,7 +10,7 @@ class GeneralPurpose(commands.Cog):
 
     cwd = os.getcwd()
     sys.path.append(f'{cwd}..')
-    from config import ame_token, ame_endpoints
+    from config import ame_token, ame_endpoints, bg_key
     Templates = commands.option_enum(ame_endpoints)
 
     def __init__(self, bot):
@@ -79,6 +79,27 @@ class GeneralPurpose(commands.Cog):
 
         data = r.json()
         return await inter.response.send_message(data[0]['symbol'][0]['data'])
+
+
+    @commands.slash_command(name='remove-background', description='Remoe the background of an image')
+    async def remove_background(self, inter, img_url: str):
+        if not validators.url(img_url):
+            return await inter.response.send_message('Please provide a valid URL', ephemeral=True)
+
+        base_url = 'https://api.remove.bg/v1.0/removebg'
+        headers = {'X-Api-Key': self.bg_key}
+        data = {'image_url': img_url}
+        r = requests.post(base_url, headers=headers, data=data)
+
+        if r.status_code != (200 or 201):
+            return await inter.response.send_message(f"Error: {r.status_code}")
+
+        # save request as a png
+        with open(f'bg_removed.png', 'wb') as f:
+            f.write(r.content)
+        
+        # send image
+        await inter.response.send_message(file=disnake.File(f'bg_removed.png'))
 
     
 
