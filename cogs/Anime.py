@@ -98,7 +98,7 @@ class Anime(commands.Cog):
 
         return output
 
-    @commands.slash_command(name='ani-pic', description='Get anime image/gif')
+    @commands.slash_command(name='ani-pic', description='Get an anime image/gif')
     async def ani_pic(self, inter, category: Categories = None):
         if category is None:
             category = self.categories.random()
@@ -110,7 +110,7 @@ class Anime(commands.Cog):
         await inter.response.send_message(picture)
         
 
-    @commands.slash_command(name='anime-search', description='Get details of an anime')
+    @commands.slash_command(name='anime-search', description='Get information and details about an anime')
     async def ani_search(self, inter, query):
         
         if len(str(query)) < 4:
@@ -178,7 +178,7 @@ class Anime(commands.Cog):
         return await inter.followup.send(embed=embed)
 
 
-    @commands.slash_command(name='manga-search', description='Get details about a manga')
+    @commands.slash_command(name='manga-search', description='Get information and details about an manga.')
     async def manga_search(self, inter, query):
         
         if len(query) < 4:

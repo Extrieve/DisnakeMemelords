@@ -27,8 +27,9 @@ class Automation(commands.Cog):
     regions = {'na': ('North America', '🇺🇸'), 'euw': ('Europe West', '🇪🇺'), 'br': (
         'Brazil', '🇧🇷'), 'las': ('LAS', '🇵🇪'), 'lan': ('LAN', '🇲🇽')}
 
-    Regions = commands.option_enum(regions.keys())
     flags = [item[1] for item in regions.values()]
+    # regions_copy = regions.copy()
+    # Regions = commands.option_enum(regions_copy.keys())
 
     def __init__(self, bot):
         self.bot = bot
@@ -42,7 +43,7 @@ class Automation(commands.Cog):
         if 'twitter' not in url:
             return await inter.response.send_message('Please provide a valid Twitter URL', ephemeral=True)
 
-        await inter.response.defer('Loading...', ephemeral=True)
+        await inter.response.defer(with_message='Loading...', ephemeral=False)
 
         site = 'https://www.savetweetvid.com/'
         self.driver.get(site)
@@ -67,7 +68,7 @@ class Automation(commands.Cog):
         self.driver.close()
         self.driver.quit()
 
-        return await inter.response.send_message(links[0])
+        return await inter.followup.send(links[0], ephemeral=False)
         
 
 

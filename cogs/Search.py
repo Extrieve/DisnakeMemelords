@@ -73,7 +73,7 @@ class Search(commands.Cog):
     @commands.slash_command(name='image-search', description='Search for an image')
     async def image_search(self, inter, query):
 
-        await inter.response.defer(with_message='Searching...', ephimeral=True)
+        await inter.response.defer(with_message='Searching...', ephemeral=False)
 
         params = {
             'q': query,
@@ -86,7 +86,7 @@ class Search(commands.Cog):
         length = len(results['images_results'])
 
         if not results:
-            return await inter.followup.send(f'No results found for {search}.', ephimeral=True)
+            return await inter.followup.send(f'No results found for {search}.', ephemeral=True)
     
         # Display the first image but allow the user to traverse the rest
         embed = disnake.Embed(title=f'{results["images_results"][0]["title"]}', url=results['images_results'][0]['original'], color=0x00ff00)
