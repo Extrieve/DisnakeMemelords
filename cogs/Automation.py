@@ -1,5 +1,4 @@
 from disnake.ext import commands
-import disnake
 from selenium import webdriver
 from Screenshot import Screenshot_Clipping
 from selenium.webdriver.chrome.service import Service
@@ -7,6 +6,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from PIL import Image
+import disnake
 import asyncio
 import os
 import validators
@@ -29,7 +29,7 @@ class Automation(commands.Cog):
 
     flags = [item[1] for item in regions.values()]
     # regions_copy = regions.copy()
-    # Regions = commands.option_enum(regions_copy.keys())
+    Regions = commands.option_enum([item for item in regions.keys()])
 
     def __init__(self, bot):
         self.bot = bot
@@ -70,6 +70,11 @@ class Automation(commands.Cog):
 
         return await inter.followup.send(links[0], ephemeral=False)
         
+
+    @commands.slash_command(name='opgg-livematch', description='Get the live match of an op.gg summoner')
+    async def opgg_livematch(self, inter, summoner, region: Regions): 
+
+        return await inter.response.send_message(f'{summoner} {region}', ephemeral=True)
 
 
 def setup(bot):
