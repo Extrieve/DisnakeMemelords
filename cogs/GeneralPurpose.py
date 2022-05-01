@@ -10,7 +10,8 @@ class GeneralPurpose(commands.Cog):
 
     cwd = os.getcwd()
     sys.path.append(f'{cwd}..')
-    from config import ame_token, ame_endpoints, bg_key
+    from config import ame_token, bg_key
+    from setup import ame_endpoints
     Templates = commands.option_enum(ame_endpoints)
 
     def __init__(self, bot):

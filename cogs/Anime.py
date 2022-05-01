@@ -13,7 +13,7 @@ class Anime(commands.Cog):
 
     working_dir = os.path.dirname(os.path.abspath(__file__))
     sys.path.append(f'{working_dir}..')
-    from config import categories
+    from setup import categories
 
     Categories = commands.option_enum(categories)
     themes_data = json.load(open(f'{working_dir}/../db/themes2.json', encoding='utf8'))

@@ -1,8 +1,8 @@
 from disnake.ext import commands
 import disnake
 import config
+import setup
 import asyncio
-import os
 
 class Bot(commands.Bot):
     def __init__(self, **kwargs):
@@ -13,17 +13,14 @@ class Bot(commands.Bot):
             sync_commands_debug=True,
         )
         
-        for cog in config.cogs:
+        for cog in setup.cogs:
             try:
                 self.load_extension(cog)
             except Exception as e:
                 print(f'Failed to load cog {cog}\n{e}')
 
     async def on_ready(self):
-        print('Logged in as')
-        print(self.user.name)
-        print(self.user.id)
-        print('------')
+        print(f'Logged on as {self.user} (ID: {self.user.id})')
 
 
 async def main():
