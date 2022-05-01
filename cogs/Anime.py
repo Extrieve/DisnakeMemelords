@@ -16,9 +16,9 @@ class Anime(commands.Cog):
     from setup import categories
 
     Categories = commands.option_enum(categories)
-    themes_data = json.load(open(f'{working_dir}/../db/themes2.json', encoding='utf8'))
+    themes_data = json.load(open(f'{working_dir}/../db/themes3.json', encoding='utf8'))
 
-    with open(f'{working_dir}/../db/registered_ids1.csv', 'r', encoding='utf-8') as f:
+    with open(f'{working_dir}/../db/registered_ids2.csv', 'r', encoding='utf-8') as f:
         reader = csv.reader(f)
         registered_ids = [int(row[0]) for row in list(reader)[1:]]
 
