@@ -9,7 +9,7 @@ class Bot(commands.Bot):
         super().__init__(
             command_prefix=commands.when_mentioned_or('!'),
             description='Third and final refactor',
-            test_guilds=[953357475254505592, 193188992857014272],
+            test_guilds=[193188992857014272],
             sync_commands_debug=True,
         )
         
