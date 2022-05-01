@@ -11,7 +11,6 @@ class Search(commands.Cog):
     cwd = os.getcwd()
     sys.path.append(f'{cwd}..')
     serp_key = os.environ['serp_key']
-    from config import serp_key
 
     def __init__(self, bot):
         self.bot = bot
