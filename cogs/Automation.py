@@ -76,6 +76,7 @@ class Automation(commands.Cog):
     async def opgg_livematch(self, inter, summoner, region: Regions): 
 
         return await inter.response.send_message(f'{summoner} {region}', ephemeral=True)
+        # TODO: Implement the rest of the functionality
 
 
 def setup(bot):
