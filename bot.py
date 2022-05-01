@@ -1,8 +1,8 @@
 from disnake.ext import commands
 import disnake
-import config
 import setup
 import asyncio
+import os
 
 class Bot(commands.Bot):
     def __init__(self, **kwargs):
@@ -27,7 +27,7 @@ async def main():
     intents = disnake.Intents.default()
     intents.members = True
     bot = Bot(intents=intents)
-    await bot.start(config.token)
+    await bot.start(os.environ['token'])
 
 if __name__ == '__main__':
     asyncio.run(main())

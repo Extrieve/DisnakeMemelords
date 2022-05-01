@@ -14,15 +14,16 @@ import validators
 class Automation(commands.Cog):
     """Automation Cog dedicated to scrape data using Selenium and/or BeautifulSoup."""
 
-    opt = webdriver.ChromeOptions()
-    opt.add_argument('--headless')
-    opt.add_argument('--disable-gpu')
-    opt.add_argument('--no-sandbox')
-    opt.add_argument('--disable-dev-shm-usage')
+    chrome_options = webdriver.ChromeOptions()
+
     resolution = "--window-size=1920,1080"
-    opt.add_argument(resolution)
-    service = Service(r'C:\Selenium\chromedriver_win32\chromedriver.exe')
-    driver = webdriver.Chrome(service=service, options=opt)
+    chrome_options.add_argument(resolution)
+    chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--disable-dev-shm-usage")
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
+    service = Service(os.environ.get("CHROMEDRIVER_PATH"))
+    driver = webdriver.Chrome(service=service, chrome_options=chrome_options)
 
     regions = {'na': ('North America', '🇺🇸'), 'euw': ('Europe West', '🇪🇺'), 'br': (
         'Brazil', '🇧🇷'), 'las': ('LAS', '🇵🇪'), 'lan': ('LAN', '🇲🇽')}
