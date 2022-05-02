@@ -1,5 +1,5 @@
 from disnake.ext import commands
-from numpy import random
+import random
 import disnake
 import requests
 import json
@@ -13,6 +13,7 @@ class GeneralPurpose(commands.Cog):
     from config import ame_token, bg_key
     from setup import ame_endpoints
     Templates = commands.option_enum(ame_endpoints)
+    movie_clips = json.load(open(f'db/movies_db.json', encoding='utf8'))
 
     def __init__(self, bot):
         self.bot = bot
@@ -102,7 +103,25 @@ class GeneralPurpose(commands.Cog):
         # send image
         await inter.response.send_message(file=disnake.File(f'bg_removed.png'))
 
-    
+
+    @commands.slash_command(name='movie-clip', description='Get a movie clip from the database')
+    async def movie_clip(self, inter, movie: str):
+        
+        movie = movie.lower()
+        flag = False
+        for entry in self.movie_clips:
+            if movie in entry.lower():
+                movie = entry
+                flag = True
+                break
+        
+        if not flag:
+            return await inter.response.send_message('No movie clip found', ephemeral=True)
+
+        # get a random clip from the movie
+        clip = random.choice(self.movie_clips[movie])
+        return await inter.response.send_message(clip)
+
 
 def setup(bot):
     bot.add_cog(GeneralPurpose(bot))
