@@ -78,14 +78,6 @@ class Admin(commands.Cog):
         await member.remove_roles(role)
         await ctx.send(f'Removed {role.name} from {member.mention}')
 
-    # on member join
-    @commands.Cog.listener()
-    async def on_member_join(self, member):
-        """On member join, assign the member the default role."""
-        # Assign the member the role 'Normies'
-        role = disnake.utils.get(member.guild.roles, name='Normies')
-        await member.add_roles(role)
-
     # get guild id
     @commands.command(name='guildid', aliases=['gid'], pass_context=True)
     async def guildid(self, ctx):
@@ -99,6 +91,15 @@ class Admin(commands.Cog):
         invite = await ctx.channel.create_invite(max_age=0, max_uses=0)
         await ctx.send(f'{invite.url}')
     
+    # on member join
+    @commands.Cog.listener()
+    async def on_member_join(self, member):
+        """On member join, assign the member the default role."""
+        # Assign the member the role 'Normies'
+        role = disnake.utils.get(member.guild.roles, name='Normies')
+        print(role)
+        await member.add_roles(role)
+
 
 def setup(bot):
     bot.add_cog(Admin(bot))
