@@ -1,3 +1,5 @@
+from PIL import Image
+from io import BytesIO
 from disnake.ext import commands
 import random
 import disnake
@@ -121,6 +123,20 @@ class GeneralPurpose(commands.Cog):
         # get a random clip from the movie
         clip = random.choice(self.movie_clips[movie])
         return await inter.response.send_message(clip)
+
+
+    @commands.slash_command(name='greyscale', description='Convert an image to greyscale')
+    async def greyscale(self, inter, img_url: str):
+        if not validators.url(img_url):
+            return await inter.response.send_message('Please provide a valid URL', ephemeral=True)
+
+        r = requests.get(img_url, stream = True)
+        bytes_io = BytesIO()
+        image = Image.open(BytesIO(r.content))
+        image.convert('L').save(bytes_io, format='PNG')
+        bytes_io.seek(0)
+        dfile = disnake.File(bytes_io, filename='greyscale.png')
+        return await inter.response.send_message(file=dfile)
 
 
 def setup(bot):
