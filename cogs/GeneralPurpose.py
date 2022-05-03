@@ -1,4 +1,4 @@
-from PIL import Image, ImageFilter
+from PIL import Image, ImageFilter, ImageOps
 from io import BytesIO
 from disnake.ext import commands
 import disnake
@@ -217,7 +217,7 @@ class GeneralPurpose(commands.Cog):
         r = requests.get(img_url, stream = True)
         bytes_io = BytesIO()
         image = Image.open(BytesIO(r.content))
-        image.filter(ImageFilter.INVERT).save(bytes_io, format='PNG')
+        ImageOps.invert(image).save(bytes_io, format='PNG')
         bytes_io.seek(0)
         dfile = disnake.File(bytes_io, filename='invert.png')
         return await inter.response.send_message(file=dfile)
