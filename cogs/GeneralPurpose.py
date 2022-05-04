@@ -218,7 +218,16 @@ class GeneralPurpose(commands.Cog):
         r = requests.get(img_url, stream = True)
         bytes_io = BytesIO()
         image = Image.open(BytesIO(r.content))
-        ImageOps.invert(image).save(bytes_io, format='PNG')
+        # convert to RGB
+        image = image.convert('RGB')
+        # invert colors
+        r, g, b = image.split()
+        r = ImageOps.invert(r)
+        g = ImageOps.invert(g)
+        b = ImageOps.invert(b)
+        # merge
+        image = Image.merge('RGB', (r, g, b))
+        image.save(bytes_io, format='PNG')
         bytes_io.seek(0)
         dfile = disnake.File(bytes_io, filename='invert.png')
         return await inter.response.send_message(file=dfile)
