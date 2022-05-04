@@ -120,6 +120,53 @@ class Search(commands.Cog):
                 await msg.edit(embed=embed)
                 await msg.remove_reaction(reaction.emoji, user)
 
+
+    @commands.slash_command(name='fast-image-search', description='Search for an image')
+    async def fast_image_search(self, inter, query):
+        url = 'https://imsea.herokuapp.com/api/1?q='
+        params = {'q': query}
+        response = requests.get(url, params=params)
+
+        if response.status_code != 200:
+            return await inter.respose.send_message(f'Error: {response.status_code}', ephemeral=True)
+
+        results = json.loads(response.text)
+        images = results['results']
+        print(images)
+        length = len(images)
+
+        if not images:
+            return await inter.followup.send(f'No results found for {query}.', ephemeral=True)
+
+        # Display the first image but allow the user to traverse the rest
+        index = 0
+        await inter.response.send_message(images[index])
+        msg = await inter.original_message()
+
+        # Allow the user to traverse the rest of the images
+        await msg.add_reaction('◀️')
+        await msg.add_reaction('▶️')
+
+        def check(reaction, user):
+            return user == inter.author and str(reaction.emoji) in ['◀️', '▶️']
+
+        while True:
+            try:
+                reaction, user = await self.bot.wait_for('reaction_add', timeout=60.0, check=check)
+            except asyncio.TimeoutError:
+                return await inter.followup.send('Request timed out.', ephemeral=True)
+            else:
+                if str(reaction.emoji) == '◀️':
+                    index -= 1
+                    if index < 0:
+                        index = length - 1
+                elif str(reaction.emoji) == '▶️':
+                    index += 1
+                    if index >= length:
+                        index = 0
+                await msg.edit(content=images[index])
+                await msg.remove_reaction(reaction.emoji, user)
+
     
     @commands.slash_command(name='yugioh', description='Search for a card')
     async def yugi(self, inter, search):
