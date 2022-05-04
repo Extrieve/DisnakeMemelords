@@ -119,8 +119,18 @@ class Anime(commands.Cog):
         anime_name = data['anime']
         character_name = data['character']
         quote = data['quote']
+        
+        # get character img from image search
+        char_url = 'https://imsea.herokuapp.com/api/1?q='
+        params = {'q' : f'{character_name} {anime_name}'}
+        char_r = requests.get(char_url, params=params)
+        if char_r.status_code == 200:
+            char_data = json.loads(char_r.text)
+            char_img = char_data['results'][0]
 
-        embed = disnake.Embed(title=f'Anime: {anime_name}\nCharacter: {character_name}', description=quote)
+        embed = disnake.Embed(title=f'Anime: {anime_name}\nCharacter: {character_name}', description=quote, color=0x00ff00)
+        if char_img:
+            embed.set_image(url=char_img)
         return await inter.response.send_message(embed=embed)
 
 
