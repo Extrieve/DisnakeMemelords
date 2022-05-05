@@ -91,6 +91,7 @@ class GeneralPurpose(commands.Cog):
         if not validators.url(img_url):
             return await inter.response.send_message('Please provide a valid URL', ephemeral=True)
 
+        await inter.response.defer(with_message='Loading...', ephemeral=False)
         base_url = 'https://api.remove.bg/v1.0/removebg'
         headers = {'X-Api-Key': self.bg_key}
         data = {'image_url': img_url}
@@ -104,7 +105,7 @@ class GeneralPurpose(commands.Cog):
             f.write(r.content)
         
         # send image
-        await inter.response.send_message(file=disnake.File(f'bg_removed.png'))
+        await inter.followup.send(file=disnake.File(f'bg_removed.png'))
 
     
     @commands.slash_command(name='movie-clip', description='Get a movie clip from the database')
