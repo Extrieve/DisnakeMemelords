@@ -8,6 +8,7 @@ import os, sys
 import csv
 import urllib.parse
 import validators
+import random
 
 class Anime(commands.Cog):
 
@@ -141,7 +142,8 @@ class Anime(commands.Cog):
     @commands.slash_command(name='anime-picture', description='Get an anime image/gif')
     async def ani_pic(self, inter, category: Categories = None):
         if category is None:
-            category = self.categories.random()
+            # choose a random category
+            category = random.choice(list(self.Categories))
         
         url = 'https://api.waifu.pics/sfw/'
         print(category)
