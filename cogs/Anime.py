@@ -8,6 +8,7 @@ import os, sys
 import csv
 import urllib.parse
 import validators
+import random
 
 class Anime(commands.Cog):
 
@@ -141,7 +142,8 @@ class Anime(commands.Cog):
     @commands.slash_command(name='anime-picture', description='Get an anime image/gif')
     async def ani_pic(self, inter, category: Categories = None):
         if category is None:
-            category = self.categories.random()
+            # choose a random category
+            category = random.choice(list(self.Categories))
         
         url = 'https://api.waifu.pics/sfw/'
         print(category)
@@ -296,7 +298,7 @@ class Anime(commands.Cog):
         options = [f'{i+1}) {item[1]}' for i, item in enumerate(available)]
         embed = disnake.Embed(title='Anime Search', description='\n'.join(options), color=0x00ff00)
         embed.set_footer(text='Type the number of the anime you want to get info on.')
-        await inter.response.send_message(embed=embed)
+        await inter.response.send_message(embed=embed, ephemeral=True)
 
         # Get user selection
         def check(m):
@@ -318,7 +320,8 @@ class Anime(commands.Cog):
         ops, eds = self.get_anime_vid(available[choice][0])
 
         if ops and not eds:
-            await inter.followup.send(f'This title contains {len(ops)} opening(s). Enter the number of the video you want to watch.')
+            await inter.followup.send(f'This title contains {len(ops)} opening(s). Enter the number of the video you want to watch.',
+             ephemeral=True)
 
             try:
                 choice = await self.bot.wait_for('message', timeout=60, check=lambda m: m.author == inter.author and m.content.isdigit())
@@ -332,7 +335,7 @@ class Anime(commands.Cog):
             return await inter.followup.send(f'Opening #{choice + 1}):\n{ops[choice]}')
 
         elif eds and not ops:
-            await inter.followup.send(f'This title contains {len(eds)} ending(s). Enter the number of the video you want to watch.')
+            await inter.followup.send(f'This title contains {len(eds)} ending(s). Enter the number of the video you want to watch.', ephemeral=True)
 
             try:
                 choice = await self.bot.wait_for('message', timeout=60, check=lambda m: m.author == inter.author and m.content.isdigit())
@@ -358,10 +361,11 @@ class Anime(commands.Cog):
             
                 reaction, user = await self.bot.wait_for('reaction_add', timeout=60, check=check)
             except asyncio.TimeoutError:
-                return await inter.followup.send('You took too long to respond.')
+                return await inter.followup.send('You took too long to respond.', ephemeral=True)
             
             if str(reaction.emoji) == '😎':
-                await inter.followup.send(f'This title has {len(ops)} opening(s). Enter the number of the video you want to watch.')
+                await inter.followup.send(f'This title has {len(ops)} opening(s). Enter the number of the video you want to watch.'
+                , ephemeral=True)
                 try:
                     choice = await self.bot.wait_for('message', timeout=60, check=lambda m: m.author == inter.author and m.content.isdigit())
                 except asyncio.TimeoutError:
@@ -374,7 +378,8 @@ class Anime(commands.Cog):
                 return await inter.followup.send(f'Opening #{choice + 1}):\n{ops[choice]}')
             
             else:
-                await inter.followup.send(f'This title has {len(eds)} ending(s). Enter the number of the video you want to watch.')
+                await inter.followup.send(f'This title has {len(eds)} ending(s). Enter the number of the video you want to watch.'
+                , ephemeral=True)
 
                 try:
                     choice = await self.bot.wait_for('message', timeout=60, check=lambda m: m.author == inter.author and m.content.isdigit())
