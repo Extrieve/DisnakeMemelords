@@ -233,5 +233,23 @@ class GeneralPurpose(commands.Cog):
         return await inter.response.send_message(file=dfile)
 
 
+    @commands.slash_command(name='stoic', description='Get a stoic quote')
+    async def stoic(self, inter):
+
+        await inter.response.defer(with_message='Loading...', ephemeral=False)
+
+        url = 'https://api.themotivate365.com/stoic-quote'
+        r = requests.get(url)
+
+        if r.status_code != 200:
+            return await inter.followup.send('Something went wrong', ephemeral=True)
+
+        data = r.json()
+        title = data['data']['author']
+        quote = data['data']['quote']
+        embed = disnake.Embed(title=title, description=quote, color=0x00ff00)
+        return await inter.followup.send(embed=embed)
+
+
 def setup(bot):
     bot.add_cog(GeneralPurpose(bot))
