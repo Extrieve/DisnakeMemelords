@@ -21,7 +21,7 @@ class Automation(commands.Cog):
     opt.add_argument('--disable-dev-shm-usage')
     resolution = "--window-size=1920,1080"
     opt.add_argument(resolution)
-    service = Service(r'C:\Selenium\chromedriver_win32\chromedriver.exe')
+    service = Service(r'/home/extrieve/Documents/chromedriver/chromedriver')
     driver = webdriver.Chrome(service=service, options=opt)
 
     regions = {'na': ('North America', '🇺🇸'), 'euw': ('Europe West', '🇪🇺'), 'br': (
