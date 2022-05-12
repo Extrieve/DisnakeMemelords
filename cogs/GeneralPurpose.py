@@ -1,7 +1,7 @@
 from PIL import Image, ImageFilter, ImageOps
 from io import BytesIO
 import disnake
-from disnake.ext import commands
+from disnake.ext import commands, tasks
 from numpy import random
 import requests
 import json
@@ -15,6 +15,7 @@ class GeneralPurpose(commands.Cog):
     ame_token = os.environ['ame_token']
     bg_key = os.environ['bg_key']
     from setup import ame_endpoints
+    from setup import speech_bubble
     Templates = commands.option_enum(ame_endpoints)
     movie_clips = json.load(open(f'db/movies_db.json', encoding='utf8'))
 
@@ -22,7 +23,7 @@ class GeneralPurpose(commands.Cog):
         self.bot = bot
 
     @commands.slash_command(name='avatar', description='Get the avatar of a user.')
-    async def avatar(self, inter, *, user: disnake.Member = None):
+    async def avatar(self, inter, *, user: disnake.Member = None) -> None:
         """Get the avatar of a user."""
         if user is None:
             user = inter.author
@@ -30,7 +31,7 @@ class GeneralPurpose(commands.Cog):
         
     
     @commands.slash_command(name='shorten-url', description='Shorten any URL')
-    async def shorten(self, inter, url):
+    async def shorten(self, inter, url: str) -> None:
         
         if not validators.url(url):
             return await inter.response.send_message('Please provide a valid URL', ephemeral=True)
@@ -49,7 +50,7 @@ class GeneralPurpose(commands.Cog):
 
 
     @commands.slash_command(name='meme-generator' ,description='Generate a meme with the available templates')
-    async def meme_generator(self, inter, img_url: str, template: Templates):
+    async def meme_generator(self, inter, img_url: str, template: Templates) -> None:
         
         if not validators.url(img_url):
             return await inter.response.send_message('Please provide a valid URL', ephemeral=True)
@@ -71,7 +72,7 @@ class GeneralPurpose(commands.Cog):
 
 
     @commands.slash_command(description='Decode a QR code by providing a ')
-    async def qr(self, inter, qr_url): 
+    async def qr(self, inter, qr_url: str) -> None: 
         
         if not validators.url(qr_url):
             return await inter.response.send_message('Please provide a valid URL', ephemeral=True)
@@ -87,7 +88,7 @@ class GeneralPurpose(commands.Cog):
 
 
     @commands.slash_command(name='remove-background', description='Remove the background of an image')
-    async def remove_background(self, inter, img_url: str):
+    async def remove_background(self, inter, img_url: str) -> None:
         if not validators.url(img_url):
             return await inter.response.send_message('Please provide a valid URL', ephemeral=True)
 
@@ -107,9 +108,9 @@ class GeneralPurpose(commands.Cog):
         # send image
         await inter.followup.send(file=disnake.File(f'bg_removed.png'))
 
-    
+
     @commands.slash_command(name='movie-clip', description='Get a movie clip from the database')
-    async def movie_clip(self, inter, movie: str):
+    async def movie_clip(self, inter, movie: str) -> None:
         
         movie = movie.lower()
         flag = False
@@ -126,112 +127,37 @@ class GeneralPurpose(commands.Cog):
         clip = random.choice(self.movie_clips[movie])
         return await inter.response.send_message(clip)
 
-    
-    @commands.slash_command(name='greyscale', description='Convert an image to greyscale')
-    async def greyscale(self, inter, img_url: str):
-        if not validators.url(img_url):
-            return await inter.response.send_message('Please provide a valid URL', ephemeral=True)
 
-        r = requests.get(img_url, stream = True)
-        bytes_io = BytesIO()
-        image = Image.open(BytesIO(r.content))
-        image.convert('L').save(bytes_io, format='PNG')
-        bytes_io.seek(0)
-        dfile = disnake.File(bytes_io, filename='greyscale.png')
-        return await inter.response.send_message(file=dfile)
+    @commands.slash_command(name='stoic', description='Get a stoic quote')
+    async def stoic(self, inter) -> None:
 
-    
-    @commands.slash_command(name='reverse', description='Reverse an image')
-    async def reverse(self, inter, img_url: str):
-        if not validators.url(img_url):
-            return await inter.response.send_message('Please provide a valid URL', ephemeral=True)
+        await inter.response.defer(with_message='Loading...', ephemeral=False)
 
-        r = requests.get(img_url, stream = True)
-        bytes_io = BytesIO()
-        image = Image.open(BytesIO(r.content))
-        image.transpose(Image.FLIP_LEFT_RIGHT).save(bytes_io, format='PNG')
-        bytes_io.seek(0)
-        dfile = disnake.File(bytes_io, filename='reverse.png')
-        return await inter.response.send_message(file=dfile)
+        url = 'https://api.themotivate365.com/stoic-quote'
+        r = requests.get(url)
 
-    
-    @commands.slash_command(name='flip-img', description='Flip an image')
-    async def flip(self, inter, img_url: str):
-        if not validators.url(img_url):
-            return await inter.response.send_message('Please provide a valid URL', ephemeral=True)
+        if r.status_code != 200:
+            return await inter.followup.send('Something went wrong', ephemeral=True)
 
-        r = requests.get(img_url, stream = True)
-        bytes_io = BytesIO()
-        image = Image.open(BytesIO(r.content))
-        image.transpose(Image.FLIP_TOP_BOTTOM).save(bytes_io, format='PNG')
-        bytes_io.seek(0)
-        dfile = disnake.File(bytes_io, filename='flip.png')
-        return await inter.response.send_message(file=dfile)
-
-    
-    @commands.slash_command(name='rotate', description='Rotate an image')
-    async def rotate(self, inter, img_url: str, angle: int):
-        if not validators.url(img_url):
-            return await inter.response.send_message('Please provide a valid URL', ephemeral=True)
-
-        r = requests.get(img_url, stream = True)
-        bytes_io = BytesIO()
-        image = Image.open(BytesIO(r.content))
-        image.rotate(angle).save(bytes_io, format='PNG')
-        bytes_io.seek(0)
-        dfile = disnake.File(bytes_io, filename='rotate.png')
-        return await inter.response.send_message(file=dfile)
-
-    
-    @commands.slash_command(name='blur', description='Blur an image')
-    async def blur(self, inter, img_url: str):
-        if not validators.url(img_url):
-            return await inter.response.send_message('Please provide a valid URL', ephemeral=True)
-
-        r = requests.get(img_url, stream = True)
-        bytes_io = BytesIO()
-        image = Image.open(BytesIO(r.content))
-        image.filter(ImageFilter.BLUR).save(bytes_io, format='PNG')
-        bytes_io.seek(0)
-        dfile = disnake.File(bytes_io, filename='blur.png')
-        return await inter.response.send_message(file=dfile)
+        data = r.json()
+        title = data['data']['author']
+        quote = data['data']['quote']
+        embed = disnake.Embed(title=title, description=quote, color=0x00ff00)
+        return await inter.followup.send(embed=embed)
 
 
-    @commands.slash_command(name='pixelate', description='Pixelate an image')
-    async def pixelate(self, inter, img_url: str, size: int):
-        if not validators.url(img_url):
-            return await inter.response.send_message('Please provide a valid URL', ephemeral=True)
+    @tasks.loop(seconds=5)
+    async def test1(self) -> None:
+        print('Waiting...')
+        await self.bot.wait_until_ready()
+        # send a message to the channel id = 953357475254505595
+        rand_gid = random.choice(self.speech_bubble)
+        await self.bot.get_channel(953357475254505595).send(rand_gid)
+        
 
-        r = requests.get(img_url, stream = True)
-        bytes_io = BytesIO()
-        image = Image.open(BytesIO(r.content))
-        image.filter(ImageFilter.SMOOTH).save(bytes_io, format='PNG')
-        bytes_io.seek(0)
-        dfile = disnake.File(bytes_io, filename='pixelate.png')
-        return await inter.response.send_message(file=dfile)
-
-
-    @commands.slash_command(name='invert', description='Invert an image')
-    async def invert(self, inter, img_url: str):
-        if not validators.url(img_url):
-            return await inter.response.send_message('Please provide a valid URL', ephemeral=True)
-
-        r = requests.get(img_url, stream = True)
-        bytes_io = BytesIO()
-        image = Image.open(BytesIO(r.content))
-        # convert to RGB
-        image = image.convert('RGB')
-        # invert colors
-        r, g, b = image.split()
-        r = ImageOps.invert(r)
-        g = ImageOps.invert(g)
-        b = ImageOps.invert(b)
-        # merge
-        image = Image.merge('RGB', (r, g, b))
-        image.save(bytes_io, format='PNG')
-        bytes_io.seek(0)
-        dfile = disnake.File(bytes_io, filename='invert.png')
-        return await inter.response.send_message(file=dfile)
+    @commands.slash_command(name='channel-id', description='Get the channel ID')
+    async def channel_id(self, inter) -> None:
+        await inter.response.send_message(inter.channel.id, ephemeral=True)
 
 
 def setup(bot):

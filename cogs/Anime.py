@@ -27,7 +27,7 @@ class Anime(commands.Cog):
         self.bot = bot
 
     ### Non-command functions ###
-    def get_anime_data(self, anime_name):
+    def get_anime_data(self, anime_name: str) -> list:
         """
         Returns the data of the anime with the given name.
         """
@@ -50,7 +50,7 @@ class Anime(commands.Cog):
         return list(zip(anime_ids, names))
 
     
-    def get_anime_vid(self, anime_id):
+    def get_anime_vid(self, anime_id: int) -> dict:
         """
         Returns the video of the anime with the given id.
         """
@@ -61,10 +61,10 @@ class Anime(commands.Cog):
                 current = item['mirrors'][0]['mirror']
                 openings.append(current) if 'OP' in current else endings.append(current)
         
-        return openings, endings
+        return {'openings': openings, 'endings': endings}
 
     
-    def anilist_query(self, anime_id):
+    def anilist_query(self, anime_id: int) -> dict:
         
         query = '''
         query ($id: Int) { # Define which variables will be used in the query (id)
@@ -101,7 +101,7 @@ class Anime(commands.Cog):
 
 
     @commands.slash_command(name='anime-quote', description='Get a an anime quote.')
-    async def anime_quote(self, inter, *, anime_name: str=None, character_name: str=None):
+    async def anime_quote(self, inter, *, anime_name: str=None, character_name: str=None) -> None:
         """
         Get a quote from an anime.
         """
@@ -208,7 +208,7 @@ class Anime(commands.Cog):
 
 
     @commands.slash_command(name='anime-picture', description='Get an anime image/gif')
-    async def ani_pic(self, inter, category: Categories = None):
+    async def ani_pic(self, inter, category: Categories = None) -> None:
         if category is None:
             # choose a random category
             category = random.choice(list(self.Categories))
@@ -221,7 +221,7 @@ class Anime(commands.Cog):
         
 
     @commands.slash_command(name='anime-search', description='Get information and details about an anime')
-    async def ani_search(self, inter, query):
+    async def ani_search(self, inter, query: str) -> None:
         
         if len(str(query)) < 4:
             return await inter.response.send_message('Search result should be at least 4 characters', ephemeral=True)
@@ -289,7 +289,7 @@ class Anime(commands.Cog):
 
 
     @commands.slash_command(name='manga-search', description='Get information and details about an manga.')
-    async def manga_search(self, inter, query):
+    async def manga_search(self, inter, query: str) -> None:
         
         if len(query) < 4:
             return await inter.response.send_message('Search result should be at least 4 characters', ephemeral=True)
@@ -346,7 +346,7 @@ class Anime(commands.Cog):
 
 
     @commands.slash_command(name='anime-theme', description='Get anime opening/ending video')
-    async def anime_theme(self, inter, query):
+    async def anime_theme(self, inter, query: str) -> None:
         
         if len(query) < 4:
             return await inter.response.send_message('Search result should be at least 4 characters', ephemeral=True)
@@ -385,7 +385,9 @@ class Anime(commands.Cog):
         if choice < 0 or choice >= len(available):
             return await inter.followup.send('Please enter a valid number.', ephemeral=True)
 
-        ops, eds = self.get_anime_vid(available[choice][0])
+        all = self.get_anime_vid(available[choice][0])
+        ops = all['openings']
+        eds = all['endings']
 
         if ops and not eds:
             await inter.followup.send(f'This title contains {len(ops)} opening(s). Enter the number of the video you want to watch.',
@@ -462,7 +464,7 @@ class Anime(commands.Cog):
     
 
     @commands.slash_command(name='anime-scene')
-    async def anime_scene(self, inter, scene_url):
+    async def anime_scene(self, inter, scene_url: str) -> None:
         """
         Automatically detect anime scene
         Parameters
@@ -497,7 +499,7 @@ class Anime(commands.Cog):
 
     
     @commands.Cog.listener()
-    async def on_raw_reaction_add(self, payload):
+    async def on_raw_reaction_add(self, payload) -> None:
         message = await self.bot.get_channel(payload.channel_id).fetch_message(payload.message_id)
         if message.author.bot:
             return
