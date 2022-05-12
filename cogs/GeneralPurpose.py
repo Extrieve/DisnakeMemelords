@@ -1,5 +1,3 @@
-from PIL import Image, ImageFilter, ImageOps
-from io import BytesIO
 import disnake
 from disnake.ext import commands, tasks
 from numpy import random
