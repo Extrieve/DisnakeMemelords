@@ -11,7 +11,7 @@ class ImageProcessing(commands.Cog):
         self.bot = bot
     
     @commands.slash_command(name='greyscale', description='Convert an image to greyscale')
-    async def greyscale(self, inter, img_url: str):
+    async def greyscale(self, inter, img_url: str) -> None:
         if not validators.url(img_url):
             return await inter.response.send_message('Please provide a valid URL', ephemeral=True)
 
@@ -25,7 +25,7 @@ class ImageProcessing(commands.Cog):
 
     
     @commands.slash_command(name='reverse', description='Reverse an image')
-    async def reverse(self, inter, img_url: str):
+    async def reverse(self, inter, img_url: str) -> None:
         if not validators.url(img_url):
             return await inter.response.send_message('Please provide a valid URL', ephemeral=True)
 
@@ -39,7 +39,7 @@ class ImageProcessing(commands.Cog):
 
     
     @commands.slash_command(name='flip-img', description='Flip an image')
-    async def flip(self, inter, img_url: str):
+    async def flip(self, inter, img_url: str) -> None:
         if not validators.url(img_url):
             return await inter.response.send_message('Please provide a valid URL', ephemeral=True)
 
@@ -53,7 +53,7 @@ class ImageProcessing(commands.Cog):
 
     
     @commands.slash_command(name='rotate', description='Rotate an image')
-    async def rotate(self, inter, img_url: str, angle: int):
+    async def rotate(self, inter, img_url: str, angle: int) -> None:
         if not validators.url(img_url):
             return await inter.response.send_message('Please provide a valid URL', ephemeral=True)
 
@@ -67,7 +67,7 @@ class ImageProcessing(commands.Cog):
 
     
     @commands.slash_command(name='blur', description='Blur an image')
-    async def blur(self, inter, img_url: str):
+    async def blur(self, inter, img_url: str) -> None:
         if not validators.url(img_url):
             return await inter.response.send_message('Please provide a valid URL', ephemeral=True)
 
@@ -81,7 +81,7 @@ class ImageProcessing(commands.Cog):
 
 
     @commands.slash_command(name='pixelate', description='Pixelate an image')
-    async def pixelate(self, inter, img_url: str, size: int):
+    async def pixelate(self, inter, img_url: str) -> None:
         if not validators.url(img_url):
             return await inter.response.send_message('Please provide a valid URL', ephemeral=True)
 
@@ -95,7 +95,7 @@ class ImageProcessing(commands.Cog):
 
 
     @commands.slash_command(name='invert', description='Invert an image')
-    async def invert(self, inter, img_url: str):
+    async def invert(self, inter, img_url: str) -> None:
         if not validators.url(img_url):
             return await inter.response.send_message('Please provide a valid URL', ephemeral=True)
 
@@ -114,6 +114,40 @@ class ImageProcessing(commands.Cog):
         image.save(bytes_io, format='PNG')
         bytes_io.seek(0)
         dfile = disnake.File(bytes_io, filename='invert.png')
+        return await inter.response.send_message(file=dfile)
+
+
+    @commands.slash_command(name='blend', description='Blend an image')
+    async def blend(self, inter, img_url: str, img_url2: str) -> None:
+        if not validators.url(img_url):
+            return await inter.response.send_message('Please provide a valid URL', ephemeral=True)
+
+        if not validators.url(img_url2):
+            return await inter.response.send_message('Please provide a valid URL', ephemeral=True)
+
+        r = requests.get(img_url, stream = True)
+        r2 = requests.get(img_url2, stream = True)
+
+        bytes_io = BytesIO()
+        image = Image.open(BytesIO(r.content))
+        image2 = Image.open(BytesIO(r2.content))
+        image.blend(image2, 0.5).save(bytes_io, format='PNG')
+        bytes_io.seek(0)
+        dfile = disnake.File(bytes_io, filename='blend.png')
+        return await inter.response.send_message(file=dfile)
+
+
+    @commands.slash_command(name='resize', description='Resize an image based on percentage')
+    async def resize(self, inter, img_url: str, percent: int) -> None:
+        if not validators.url(img_url):
+            return await inter.response.send_message('Please provide a valid URL', ephemeral=True)
+
+        r = requests.get(img_url, stream = True)
+        bytes_io = BytesIO()
+        image = Image.open(BytesIO(r.content))
+        image.resize((int(image.size[0] * percent / 100), int(image.size[1] * percent / 100))).save(bytes_io, format='PNG')
+        bytes_io.seek(0)
+        dfile = disnake.File(bytes_io, filename='resize.png')
         return await inter.response.send_message(file=dfile)
 
 
