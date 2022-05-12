@@ -19,7 +19,7 @@ class GeneralPurpose(commands.Cog):
         self.bot = bot
 
     @commands.slash_command(name='avatar', description='Get the avatar of a user.')
-    async def avatar(self, inter, *, user: disnake.Member = None):
+    async def avatar(self, inter, *, user: disnake.Member = None) -> None:
         """Get the avatar of a user."""
         if user is None:
             user = inter.author
@@ -27,7 +27,7 @@ class GeneralPurpose(commands.Cog):
         
     
     @commands.slash_command(name='shorten-url', description='Shorten any URL')
-    async def shorten(self, inter, url):
+    async def shorten(self, inter, url: str) -> None:
         
         if not validators.url(url):
             return await inter.response.send_message('Please provide a valid URL', ephemeral=True)
@@ -46,7 +46,7 @@ class GeneralPurpose(commands.Cog):
 
 
     @commands.slash_command(name='meme-generator' ,description='Generate a meme with the available templates')
-    async def meme_generator(self, inter, img_url: str, template: Templates):
+    async def meme_generator(self, inter, img_url: str, template: Templates) -> None:
         
         if not validators.url(img_url):
             return await inter.response.send_message('Please provide a valid URL', ephemeral=True)
@@ -68,7 +68,7 @@ class GeneralPurpose(commands.Cog):
 
 
     @commands.slash_command(description='Decode a QR code by providing a ')
-    async def qr(self, inter, qr_url): 
+    async def qr(self, inter, qr_url: str) -> None: 
         
         if not validators.url(qr_url):
             return await inter.response.send_message('Please provide a valid URL', ephemeral=True)
@@ -84,7 +84,7 @@ class GeneralPurpose(commands.Cog):
 
 
     @commands.slash_command(name='remove-background', description='Remove the background of an image')
-    async def remove_background(self, inter, img_url: str):
+    async def remove_background(self, inter, img_url: str) -> None:
         if not validators.url(img_url):
             return await inter.response.send_message('Please provide a valid URL', ephemeral=True)
 
@@ -106,7 +106,7 @@ class GeneralPurpose(commands.Cog):
 
 
     @commands.slash_command(name='movie-clip', description='Get a movie clip from the database')
-    async def movie_clip(self, inter, movie: str):
+    async def movie_clip(self, inter, movie: str) -> None:
         
         movie = movie.lower()
         flag = False
@@ -125,7 +125,7 @@ class GeneralPurpose(commands.Cog):
 
 
     @commands.slash_command(name='stoic', description='Get a stoic quote')
-    async def stoic(self, inter):
+    async def stoic(self, inter) -> None:
 
         await inter.response.defer(with_message='Loading...', ephemeral=False)
 
