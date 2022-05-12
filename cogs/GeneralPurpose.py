@@ -1,4 +1,4 @@
-from disnake.ext import commands
+from disnake.ext import commands, tasks
 import disnake
 import random
 import requests
@@ -12,11 +12,13 @@ class GeneralPurpose(commands.Cog):
     sys.path.append(f'{cwd}..')
     from config import ame_token, bg_key
     from setup import ame_endpoints
+    from setup import speech_bubble
     Templates = commands.option_enum(ame_endpoints)
     movie_clips = json.load(open(f'db/movies_db.json', encoding='utf8'))
 
     def __init__(self, bot):
         self.bot = bot
+        self.test1.start()
 
     @commands.slash_command(name='avatar', description='Get the avatar of a user.')
     async def avatar(self, inter, *, user: disnake.Member = None) -> None:
@@ -140,6 +142,20 @@ class GeneralPurpose(commands.Cog):
         quote = data['data']['quote']
         embed = disnake.Embed(title=title, description=quote, color=0x00ff00)
         return await inter.followup.send(embed=embed)
+
+
+    @tasks.loop(seconds=5)
+    async def test1(self) -> None:
+        print('Waiting...')
+        await self.bot.wait_until_ready()
+        # send a message to the channel id = 953357475254505595
+        rand_gid = random.choice(self.speech_bubble)
+        await self.bot.get_channel(953357475254505595).send(rand_gid)
+        
+
+    @commands.slash_command(name='channel-id', description='Get the channel ID')
+    async def channel_id(self, inter) -> None:
+        await inter.response.send_message(inter.channel.id)
 
 
 def setup(bot):
