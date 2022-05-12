@@ -8,6 +8,8 @@ import validators
 
 class GeneralPurpose(commands.Cog):
 
+    meme_time = random.randint(5, 30)
+
     cwd = os.getcwd()
     sys.path.append(f'{cwd}..')
     ame_token = os.environ['ame_token']
@@ -19,6 +21,7 @@ class GeneralPurpose(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.tenor_speech.start()
 
     @commands.slash_command(name='avatar', description='Get the avatar of a user.')
     async def avatar(self, inter, *, user: disnake.Member = None) -> None:
@@ -144,13 +147,13 @@ class GeneralPurpose(commands.Cog):
         return await inter.followup.send(embed=embed)
 
 
-    @tasks.loop(seconds=5)
-    async def test1(self) -> None:
-        print('Waiting...')
+    @tasks.loop(hours=meme_time)
+    async def tenor_speech(self) -> None:
         await self.bot.wait_until_ready()
-        # send a message to the channel id = 953357475254505595
+        print('Tenor Ready')
+        self.meme_time = random.randint(5, 30)
         rand_gid = random.choice(self.speech_bubble)
-        await self.bot.get_channel(953357475254505595).send(rand_gid)
+        await self.bot.get_channel(193188992857014272).send(rand_gid)
         
 
     @commands.slash_command(name='channel-id', description='Get the channel ID')
