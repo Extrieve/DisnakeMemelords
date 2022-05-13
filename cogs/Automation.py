@@ -35,7 +35,7 @@ class Automation(commands.Cog):
         self.bot = bot
 
     @commands.slash_command(name='twitter-embed-video', description='Get the embed video of a tweet')
-    async def twitter_embed_video(self, inter, url):
+    async def twitter_embed_video(self, inter, url: str) -> None:
         """Get the embed video of a tweet."""
         if not validators.url(url):
             return await inter.response.send_message('Please provide a valid URL', ephemeral=True)
@@ -72,7 +72,7 @@ class Automation(commands.Cog):
         
 
     @commands.slash_command(name='opgg-livematch', description='Get the live match of an op.gg summoner')
-    async def opgg_livematch(self, inter, summoner, region: Regions): 
+    async def opgg_livematch(self, inter, summoner: str, region: Regions) -> None: 
 
         return await inter.response.send_message(f'{summoner} {region}', ephemeral=True)
 

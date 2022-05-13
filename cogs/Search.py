@@ -16,7 +16,7 @@ class Search(commands.Cog):
         self.bot = bot
 
 
-    def getDefinition(self, word):
+    def getDefinition(self, word: str) -> str:
         response = requests.get(
             f'https://api.dictionaryapi.dev/api/v2/entries/en/{word}')
         processedResponse = json.loads(response.text)
@@ -24,7 +24,7 @@ class Search(commands.Cog):
 
 
     @commands.slash_command(name='define', description='Get the definition of a word')
-    async def define(self, inter, word):
+    async def define(self, inter, word: str) -> None:
 
         try:
             definition = self.getDefinition(word)
@@ -71,7 +71,7 @@ class Search(commands.Cog):
 
 
     @commands.slash_command(name='image-search', description='Search for an image')
-    async def image_search(self, inter, query):
+    async def image_search(self, inter, query: str) -> None:
 
         await inter.response.defer(with_message='Searching...', ephemeral=False)
 
@@ -122,7 +122,7 @@ class Search(commands.Cog):
 
     
     @commands.slash_command(name='fast-image-search', description='Search for an image')
-    async def fast_image_search(self, inter, query):
+    async def fast_image_search(self, inter, query: str) -> None:
         url = 'https://imsea.herokuapp.com/api/1?q='
         params = {'q': query}
         response = requests.get(url, params=params)
@@ -169,7 +169,7 @@ class Search(commands.Cog):
 
     
     @commands.slash_command(name='yugioh', description='Search for a card')
-    async def yugi(self, inter, search):
+    async def yugi(self, inter, search: str) -> None:
         """
         Search for a card on Yugioh Wiki.
         """

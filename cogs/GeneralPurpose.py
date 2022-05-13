@@ -8,6 +8,8 @@ import validators
 
 class GeneralPurpose(commands.Cog):
 
+    time_interval = random.randint(5, 15)
+
     cwd = os.getcwd()
     sys.path.append(f'{cwd}..')
     from config import ame_token, bg_key
@@ -144,12 +146,14 @@ class GeneralPurpose(commands.Cog):
         return await inter.followup.send(embed=embed)
 
 
-    @tasks.loop(seconds=5)
+    @tasks.loop(seconds=time_interval)
     async def test1(self) -> None:
         print('Waiting...')
         await self.bot.wait_until_ready()
         # send a message to the channel id = 953357475254505595
         rand_gid = random.choice(self.speech_bubble)
+        self.time_interval = random.randint(5, 15)
+        print(f'Time interval: {self.time_interval}')
         await self.bot.get_channel(953357475254505595).send(rand_gid)
         
 
