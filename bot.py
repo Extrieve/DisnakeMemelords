@@ -1,5 +1,5 @@
 from disnake.ext import commands
-import disnake
+from disnake import Intents
 import config
 import setup
 import asyncio
@@ -23,9 +23,10 @@ class Bot(commands.Bot):
         print(f'Logged on as {self.user} (ID: {self.user.id})')
 
 
-async def main():
-    intents = disnake.Intents.default()
+async def main() -> None:
+    intents = Intents.default()
     intents.members = True
+    intents.presences = True
     bot = Bot(intents=intents)
     await bot.start(config.token)
 

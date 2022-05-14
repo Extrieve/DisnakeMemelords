@@ -20,7 +20,7 @@ class GeneralPurpose(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        self.test1.start()
+        # self.test1.start()
 
     @commands.slash_command(name='avatar', description='Get the avatar of a user.')
     async def avatar(self, inter, *, user: disnake.Member = None) -> None:

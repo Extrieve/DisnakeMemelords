@@ -499,18 +499,18 @@ class Anime(commands.Cog):
         return await inter.response.send_message(embed=embed)
 
     
-    @commands.Cog.listener()
-    async def on_raw_reaction_add(self, payload) -> None:
-        message = await self.bot.get_channel(payload.channel_id).fetch_message(payload.message_id)
-        if message.author.bot:
-            return
+    # @commands.Cog.listener()
+    # async def on_raw_reaction_add(self, payload) -> None:
+    #     message = await self.bot.get_channel(payload.channel_id).fetch_message(payload.message_id)
+    #     if message.author.bot:
+    #         return
         
-        reaction = disnake.utils.get(message.reactions, emoji='🤓')
-        if not reaction:
-            return
+    #     reaction = disnake.utils.get(message.reactions, emoji='🤓')
+    #     if not reaction:
+    #         return
 
-        # user = payload.member
-        return await self.anime_scene(message.channel, message.content)
+    #     # user = payload.member
+    #     return await self.anime_scene(message.channel, message.content)
 
         
 
