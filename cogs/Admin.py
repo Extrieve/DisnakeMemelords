@@ -108,8 +108,11 @@ class Admin(commands.Cog):
     @commands.Cog.listener()
     async def on_member_join(self, member: disnake.Member) -> None:
         """On member join, assign the member the default role."""
-        # check if a member has joined guild and if the guild has a default role
-        print('Member joined successfully.')
+        channel = member.guild.system_channel
+        if channel is not None:
+            role = disnake.utils.get(member.guild.roles, name='Member')
+            await member.add_roles(role)
+            await channel.send(f'Added {role.name} to {member.name}')
 
 
 def setup(bot):

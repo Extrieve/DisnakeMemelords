@@ -11,6 +11,7 @@ class Bot(commands.Bot):
             description='Third and final refactor',
             test_guilds=[953357475254505592],
             sync_commands_debug=True,
+            intents=Intents.all(),
         )
         
         for cog in setup.cogs:
@@ -24,10 +25,11 @@ class Bot(commands.Bot):
 
 
 async def main() -> None:
-    intents = Intents.default()
-    intents.members = True
-    intents.presences = True
-    bot = Bot(intents=intents)
+    # intents = Intents.default()
+    # intents.members = True
+    # intents.presences = True
+    # intents.messages = True
+    bot = Bot()
     await bot.start(config.token)
 
 if __name__ == '__main__':
