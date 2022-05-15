@@ -497,21 +497,6 @@ class Anime(commands.Cog):
         embed.set_image(url=scene_url)
         return await inter.response.send_message(embed=embed)
 
-    
-    @commands.Cog.listener()
-    async def on_raw_reaction_add(self, payload) -> None:
-        message = await self.bot.get_channel(payload.channel_id).fetch_message(payload.message_id)
-        if message.author.bot:
-            return
         
-        reaction = disnake.utils.get(message.reactions, emoji='🤓')
-        if not reaction:
-            return
-
-        # user = payload.member
-        return await self.anime_scene(message.channel, message.content)
-
-        
-
 def setup(bot):
     bot.add_cog(Anime(bot))

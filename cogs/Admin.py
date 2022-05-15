@@ -14,12 +14,14 @@ class Admin(commands.Cog):
         await member.kick(reason=reason)
         await ctx.send(f'Kicked {member.mention}')
 
+
     @commands.command(name='ban', aliases=['b'], pass_context=True)
     @commands.has_permissions(ban_members=True)
     async def ban(self, ctx, member: disnake.Member, *, reason=None) -> None:
         """Ban a member from the server."""
         await member.ban(reason=reason)
         await ctx.send(f'Banned {member.mention}')
+
 
     @commands.command(name='unban', aliases=['ub'], pass_context=True)
     @commands.has_permissions(ban_members=True)
@@ -38,12 +40,14 @@ class Admin(commands.Cog):
             
         await ctx.send(f'Could not find {member} in the ban list.')
 
+
     @commands.command(name='clear', aliases=['c'], pass_context=True)
     @commands.has_permissions(manage_messages=True)
     async def clear(self, ctx, amount: int=5) -> None:
         """Clear a certain amount of messages."""
         await ctx.channel.purge(limit=amount)
         await ctx.send(f'Cleared {amount} messages.')
+
 
     @commands.command(name='mute', aliases=['m'], pass_context=True)
     @commands.has_permissions(manage_roles=True)
@@ -53,6 +57,7 @@ class Admin(commands.Cog):
         await member.add_roles(role, reason=reason)
         await ctx.send(f'Muted {member.mention}')
 
+
     @commands.command(name='unmute', aliases=['um'], pass_context=True)
     @commands.has_permissions(manage_roles=True)
     async def unmute(self, ctx, member: disnake.Member, *, reason: str=None) -> None:
@@ -61,13 +66,14 @@ class Admin(commands.Cog):
         await member.remove_roles(role, reason=reason)
         await ctx.send(f'Unmuted {member.mention}')
 
-    # Reaction roles
+    
     @commands.command(name='addrole', aliases=['ar'], pass_context=True)
     @commands.has_permissions(manage_roles=True)
     async def addrole(self, ctx, member: disnake.Member, *, role: disnake.Role) -> None:
         """Add a role to a member."""
         await member.add_roles(role)
         await ctx.send(f'Added {role.name} to {member.mention}')
+
 
     @commands.command(name='removerole', aliases=['rr'], pass_context=True)
     @commands.has_permissions(manage_roles=True)
@@ -76,13 +82,13 @@ class Admin(commands.Cog):
         await member.remove_roles(role)
         await ctx.send(f'Removed {role.name} from {member.mention}')
 
-    # get guild id
+    
     @commands.command(name='guildid', aliases=['gid'], pass_context=True)
     async def guildid(self, ctx) -> None:
         """Get the guild id."""
         await ctx.send(f'The guild id is {ctx.guild.id}')
 
-    # create guild invite
+    
     @commands.command(name='invite', aliases=['i'], pass_context=True)
     async def invite(self, ctx) -> None:
         """Create an invite for the server."""
@@ -96,14 +102,13 @@ class Admin(commands.Cog):
         """Clear a certain amount of messages."""
         await inter.channel.purge(limit=amount)
     
-    # on member join
+
     @commands.Cog.listener()
     async def on_member_join(self, member: disnake.Member) -> None:
         """On member join, assign the member the default role."""
-        # Assign the member the role 'Normies'
-        role = disnake.utils.get(member.guild.roles, name='Normies')
-        print(role)
+        role = disnake.utils.get(member.guild.roles, name='Member')
         await member.add_roles(role)
+        print(f'Added {role.name} to {member.name}')
 
 
 def setup(bot):

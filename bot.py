@@ -10,6 +10,7 @@ class Bot(commands.Bot):
             command_prefix=commands.when_mentioned_or('!'),
             description='Third and final refactor',
             test_guilds=[193188992857014272],
+            intents=disnake.Intents.all(),
             sync_commands_debug=True,
         )
         
@@ -24,9 +25,7 @@ class Bot(commands.Bot):
 
 
 async def main():
-    intents = disnake.Intents.default()
-    intents.members = True
-    bot = Bot(intents=intents)
+    bot = Bot()
     await bot.start(os.environ['token'])
 
 if __name__ == '__main__':
