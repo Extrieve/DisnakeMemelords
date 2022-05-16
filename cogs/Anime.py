@@ -176,7 +176,74 @@ class Anime(commands.Cog):
                     await msg.remove_reaction(reaction.emoji, user)
             
         elif character_name:
-            return await inter.response.send_message('Coming soon!', ephemeral=True)
+            await inter.response.defer(with_message='Loading...', ephemeral=False)
+
+            url = 'https://animechan.vercel.app/api/quotes/character?name='
+            r = requests.get(url + character_name)
+
+            if r.status_code != 200:
+                return await inter.followup.send('Anime not found.', ephemeral=True)
+
+            data = json.loads(r.text)
+            index = 0
+            length = len(data)
+
+            character_name = data[index]['anime']
+            character_name = data[index]['character']
+            quote = data[index]['quote']
+
+            embed = disnake.Embed(title=anime_name, description=quote, color=0x00FF00)
+            embed.set_author(name=character_name)
+
+            try:
+            # get character img from image search
+                char_url = 'https://imsea.herokuapp.com/api/1?q='
+                params = {'q' : f'{character_name} {anime_name}'}
+                char_r = requests.get(char_url, params=params)
+                if char_r.status_code == 200:
+                    char_data = json.loads(char_r.text)
+                    char_img = char_data['results'][0]
+            except:
+                char_img = None
+
+            if char_img:
+                embed.set_thumbnail(url=char_img)
+
+            await inter.followup.send(embed=embed)
+            msg = await inter.original_message()
+
+            # add reaction to msg
+            await msg.add_reaction('◀️')
+            await msg.add_reaction('▶️')
+
+            def check(reaction, user):
+                return user == inter.author and str(reaction.emoji) in ['◀️', '▶️']
+
+            while True:
+                try:
+                    reaction, user = await self.bot.wait_for('reaction_add', timeout=60.0, check=check)
+                except asyncio.TimeoutError:
+                    return await inter.followup.send('Request timed out.', ephemeral=True)
+                else:
+                    if str(reaction.emoji) == '◀️':
+                        index -= 1
+                        if index < 0:
+                            index = length - 1
+                    elif str(reaction.emoji) == '▶️':
+                        index += 1
+                        if index >= length:
+                            index = 0
+
+                    anime_name = data[index]['anime']
+                    character_name = data[index]['character']
+                    quote = data[index]['quote']
+
+                    embed = disnake.Embed(title=anime_name, description=quote, color=0x00FF00)
+                    embed.set_author(name=character_name)
+                    embed.set_thumbnail(url=char_img)
+                    await msg.edit(embed=embed)
+
+                    await msg.remove_reaction(reaction.emoji, user)
 
         url = 'https://animechan.vercel.app/api/random'
         r = requests.get(url)
