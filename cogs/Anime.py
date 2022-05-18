@@ -9,6 +9,8 @@ import csv
 import urllib.parse
 import validators
 import random
+import aiohttp
+import asyncio
 
 class Anime(commands.Cog):
 
@@ -27,27 +29,6 @@ class Anime(commands.Cog):
         self.bot = bot
 
     ### Non-command functions ###
-    def get_anime_data(self, anime_name: str) -> list:
-        """
-        Returns the data of the anime with the given name.
-        """
-        if len(anime_name) < 4:
-            raise commands.BadArgument('The anime name must be at least 4 characters long.')
-
-        url = 'https://api.jikan.moe/v4/anime'
-        params = {'q' : anime_name}
-
-        request = requests.get(url, params=params)
-        if request.status_code != 200:
-            raise commands.BadArgument('Anime not found.')
-        
-        data = request.json()
-        names, anime_ids = [], []
-        for anime in data['data']:
-            names.append(anime['title'])
-            anime_ids.append(anime['mal_id'])
-        
-        return list(zip(anime_ids, names))
 
     
     def get_anime_vid(self, anime_id: int) -> dict:
@@ -63,6 +44,31 @@ class Anime(commands.Cog):
         
         return {'openings': openings, 'endings': endings}
 
+    async def get_anime_data(self, anime_name: str) -> list:
+        """
+        Returns the data of the anime with the given name.
+        """
+        if len(anime_name) < 4:
+            raise commands.BadArgument('The anime name must be at least 4 characters long.')
+
+        url = 'https://api.jikan.moe/v4/anime'
+        params = {'q' : anime_name}
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, params=params) as response:
+                data = await response.json()
+
+        # request = requests.get(url, params=params)
+        # if request.status_code != 200:
+        #     raise commands.BadArgument('Anime not found.')
+        
+        # data = request.json()
+        names, anime_ids = [], []
+        for anime in data['data']:
+            names.append(anime['title'])
+            anime_ids.append(anime['mal_id'])
+        
+        return list(zip(anime_ids, names))
     
     def anilist_query(self, anime_id: int) -> dict:
         
@@ -296,12 +302,12 @@ class Anime(commands.Cog):
         url = 'https://api.jikan.moe/v4/anime'
         params = {'q' : query}
 
-        request = requests.get(url, params=params, verify=False)
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, params=params) as resp:
+                if resp.status != 200:
+                    return await inter.response.send_message('Anime not found.', ephemeral=True)
+                data = await resp.json()
 
-        if request.status_code != 200:
-            return await inter.response.send_message('Anime not found.')
-
-        data = request.json()
         results = []
 
         for i, entry in enumerate(data['data']):
@@ -364,12 +370,12 @@ class Anime(commands.Cog):
         url = 'https://api.jikan.moe/v4/manga/'
         params = {'q' : query, 'page' : 1}
 
-        request = requests.get(url, params=params, verify=False)
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, params=params) as resp:
+                if resp.status != 200:
+                    return await inter.response.send_message('Manga not found.', ephemeral=True)
+                data = await resp.json()
 
-        if request.status_code != (200 or 204):
-            return await inter.response.send_message('Manga not found.')
-        
-        data = json.loads(request.text)
         results = []
         for i, entry in enumerate(data['data']):
             results.append(f'{i+1}. {entry["title"]}')
@@ -418,7 +424,7 @@ class Anime(commands.Cog):
         if len(query) < 4:
             return await inter.response.send_message('Search result should be at least 4 characters', ephemeral=True)
 
-        search = self.get_anime_data(query)
+        search = await self.get_anime_data(query)
         if not search:
             return await inter.response.send_message(f'No results for {query}', ephemeral=True)
 
