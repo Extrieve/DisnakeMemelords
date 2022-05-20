@@ -5,6 +5,8 @@ import requests
 import json
 import sys, os
 import validators
+import aiohttp
+import asyncio
 
 class GeneralPurpose(commands.Cog):
 
@@ -39,14 +41,23 @@ class GeneralPurpose(commands.Cog):
         base_url = 'https://gotiny.cc/api'
         headers = {'Accept': 'application/json'}
         params = {'input': url}
-        r = requests.post(base_url, headers=headers, json=params)
 
-        if r.status_code != 200:
-            return await inter.response.send_message('Something went wrong', ephemeral=True)
+        async with aiohttp.ClientSession() as session:
+            async with session.post(base_url, json=params, headers=headers) as resp:
+                if resp.status != 200:
+                    return await inter.response.send_message('Something went wrong', ephemeral=True)
+                data = await resp.json()
+                print(data)
+                res = 'https://gotiny.cc/' + data[0]['code']
+                await inter.response.send_message(res)
 
-        data = json.loads(r.text)
-        res = 'https://gotiny.cc/' + data[0]['code']
-        await inter.response.send_message(res)
+        # r = requests.post(base_url, headers=headers, json=params)
+
+        # if r.status_code != 200:
+        #     return await inter.response.send_message('Something went wrong', ephemeral=True)
+
+        # data = json.loads(r.text)
+
 
 
     @commands.slash_command(name='meme-generator' ,description='Generate a meme with the available templates')
