@@ -1,7 +1,6 @@
 from disnake.ext import commands, tasks
 import disnake
 import random
-import requests
 import json
 import sys, os
 import validators
@@ -80,33 +79,23 @@ class GeneralPurpose(commands.Cog):
         dfile = disnake.File(bytes_io, filename=f'{template}.png')
         return await inter.followup.send(file=dfile)
 
-        # r = requests.post(f'{base_url}/generate/{template}', headers=headers, data=data)
-
-        # if r.status_code != (200 or 201):
-        #     return await inter.response.send_message(f"Error: {r.status_code}")
-
-        # # save request as a png
-        # with open(f'ame_{template}.png', 'wb') as f:
-        #     f.write(r.content)
-        
-        # # send image
-        # await inter.response.send_message(file=disnake.File(f'ame_{template}.png'))
-
 
     @commands.slash_command(description='Decode a QR code by providing a ')
     async def qr(self, inter, qr_url: str) -> None: 
+
+        await inter.response.defer(with_message='Loading...', ephemeral=False)
         
         if not validators.url(qr_url):
-            return await inter.response.send_message('Please provide a valid URL', ephemeral=True)
+            return await inter.followup.send('Please provide a valid URL', ephemeral=True)
 
         url = 'http://api.qrserver.com/v1/read-qr-code/?fileurl='
-        r = requests.get(url + qr_url)
+        async with aiohttp.ClientSession() as session:
+            async with session.get(f'{url}{qr_url}') as resp:
+                if resp.status != 200:
+                    return await inter.response.send_message('Something went wrong', ephemeral=True)
+                data = await resp.json()
 
-        if r.status_code != (200 or 204):
-            return await inter.response.send_message(f'Error: {r.status_code}')
-
-        data = r.json()
-        return await inter.response.send_message(data[0]['symbol'][0]['data'])
+        return await inter.followup.send(data[0]['symbol'][0]['data'])
 
 
     @commands.slash_command(name='remove-background', description='Remove the background of an image')
@@ -118,17 +107,20 @@ class GeneralPurpose(commands.Cog):
         base_url = 'https://api.remove.bg/v1.0/removebg'
         headers = {'X-Api-Key': self.bg_key}
         data = {'image_url': img_url}
-        r = requests.post(base_url, headers=headers, data=data)
 
-        if r.status_code != (200 or 201):
-            return await inter.response.send_message(f"Error: {r.status_code}")
+        async with aiohttp.ClientSession() as session:
+            async with session.post(base_url, data=data, headers=headers) as resp:
+                if resp.status != 200:
+                    return await inter.response.send_message('Something went wrong', ephemeral=True)
+                data = await resp.content.read()
 
-        # save request as a png
-        with open(f'bg_removed.png', 'wb') as f:
-            f.write(r.content)
+        bytes_io = BytesIO()
+        image = Image.open(BytesIO(data))
+        image.save(bytes_io, format='PNG')
+        bytes_io.seek(0)
         
         # send image
-        await inter.followup.send(file=disnake.File(f'bg_removed.png'))
+        await inter.followup.send(file=disnake.File(bytes_io, filename='bg_removed.png'))
 
 
     @commands.slash_command(name='movie-clip', description='Get a movie clip from the database')
@@ -156,12 +148,12 @@ class GeneralPurpose(commands.Cog):
         await inter.response.defer(with_message='Loading...', ephemeral=False)
 
         url = 'https://api.themotivate365.com/stoic-quote'
-        r = requests.get(url)
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as resp:
+                if resp.status != 200:
+                    return await inter.response.send_message('Something went wrong', ephemeral=True)
+                data = await resp.json()
 
-        if r.status_code != 200:
-            return await inter.followup.send('Something went wrong', ephemeral=True)
-
-        data = r.json()
         title = data['data']['author']
         quote = data['data']['quote']
         embed = disnake.Embed(title=title, description=quote, color=0x00ff00)
