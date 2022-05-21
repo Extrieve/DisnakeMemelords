@@ -7,6 +7,8 @@ import sys, os
 import validators
 import aiohttp
 import asyncio
+from PIL import Image
+from io import BytesIO
 
 class GeneralPurpose(commands.Cog):
 
@@ -51,17 +53,11 @@ class GeneralPurpose(commands.Cog):
                 res = 'https://gotiny.cc/' + data[0]['code']
                 await inter.response.send_message(res)
 
-        # r = requests.post(base_url, headers=headers, json=params)
-
-        # if r.status_code != 200:
-        #     return await inter.response.send_message('Something went wrong', ephemeral=True)
-
-        # data = json.loads(r.text)
-
-
 
     @commands.slash_command(name='meme-generator' ,description='Generate a meme with the available templates')
     async def meme_generator(self, inter, img_url: str, template: Templates) -> None:
+
+        await inter.response.defer(with_message='Loading...', ephemeral=False)
         
         if not validators.url(img_url):
             return await inter.response.send_message('Please provide a valid URL', ephemeral=True)
@@ -69,17 +65,32 @@ class GeneralPurpose(commands.Cog):
         base_url = "https://v1.api.amethyste.moe"
         headers = {'Authorization': f'Bearer {self.ame_token}'}
         data = {'url': img_url}
-        r = requests.post(f'{base_url}/generate/{template}', headers=headers, data=data)
 
-        if r.status_code != (200 or 201):
-            return await inter.response.send_message(f"Error: {r.status_code}")
+        async with aiohttp.ClientSession() as session:
+            final_url = f'{base_url}/generate/{template}'
+            async with session.post(final_url, data=data, headers=headers) as resp:
+                if resp.status != 200:
+                    return await inter.response.send_message('Something went wrong', ephemeral=True)
+                data = await resp.content.read()
 
-        # save request as a png
-        with open(f'ame_{template}.png', 'wb') as f:
-            f.write(r.content)
+        bytes_io = BytesIO()
+        image = Image.open(BytesIO(data))
+        image.save(bytes_io, format='PNG')
+        bytes_io.seek(0)
+        dfile = disnake.File(bytes_io, filename=f'{template}.png')
+        return await inter.followup.send(file=dfile)
+
+        # r = requests.post(f'{base_url}/generate/{template}', headers=headers, data=data)
+
+        # if r.status_code != (200 or 201):
+        #     return await inter.response.send_message(f"Error: {r.status_code}")
+
+        # # save request as a png
+        # with open(f'ame_{template}.png', 'wb') as f:
+        #     f.write(r.content)
         
-        # send image
-        await inter.response.send_message(file=disnake.File(f'ame_{template}.png'))
+        # # send image
+        # await inter.response.send_message(file=disnake.File(f'ame_{template}.png'))
 
 
     @commands.slash_command(description='Decode a QR code by providing a ')
