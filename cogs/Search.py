@@ -1,9 +1,8 @@
 from disnake.ext import commands
 import disnake
 import sys, os
-import requests
-import json
 import asyncio
+import aiohttp
 from serpapi import GoogleSearch
 
 class Search(commands.Cog):
@@ -16,11 +15,13 @@ class Search(commands.Cog):
         self.bot = bot
 
 
-    def getDefinition(self, word: str) -> str:
-        response = requests.get(
-            f'https://api.dictionaryapi.dev/api/v2/entries/en/{word}')
-        processedResponse = json.loads(response.text)
-        return processedResponse[0]['meanings'][0]['definitions']
+    async def getDefinition(self, word: str) -> str:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(f'https://api.dictionaryapi.dev/api/v2/entries/en/{word}') as resp:
+                if resp.status != 200:
+                    raise Exception('Something went wrong')
+                data = await resp.json()
+                return data[0]['meaning']['definitions'][0]['definition']
 
 
     @commands.slash_command(name='define', description='Get the definition of a word')
@@ -125,12 +126,17 @@ class Search(commands.Cog):
     async def fast_image_search(self, inter, query: str) -> None:
         url = 'https://imsea.herokuapp.com/api/1?q='
         params = {'q': query}
-        response = requests.get(url, params=params)
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, params=params) as resp:
+                if resp.status != 200:
+                    return await inter.response.send_message('No results found')
+                results = await resp.json()
+        # response = requests.get(url, params=params)
 
-        if response.status_code != 200:
-            return await inter.respose.send_message(f'Error: {response.status_code}', ephemeral=True)
+        # if response.status_code != 200:
+        #     return await inter.respose.send_message(f'Error: {response.status_code}', ephemeral=True)
 
-        results = json.loads(response.text)
+        # results = json.loads(response.text)
         images = results['results']
         print(images)
         length = len(images)
@@ -178,12 +184,18 @@ class Search(commands.Cog):
         params = {
             'name': search
         }
-        response = requests.get(url, params=params)
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, params=params) as response:
+                if response.status != 200:
+                    return await inter.response.send_message('No results found')
+                data = await response.json()
 
-        if response.status_code != 200:
-            return await inter.response.send_message('No results found.', ephemeral=True)
+        # response = requests.get(url, params=params)
 
-        data = json.loads(response.text)
+        # if response.status_code != 200:
+        #     return await inter.response.send_message('No results found.', ephemeral=True)
+
+        # data = json.loads(response.text)
         
         images = []
         for i in range(len(data['data'][0]['card_images'])):
