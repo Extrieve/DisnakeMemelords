@@ -9,7 +9,6 @@ import urllib.parse
 import validators
 import random
 import aiohttp
-import asyncio
 
 class Anime(commands.Cog):
 

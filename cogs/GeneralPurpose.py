@@ -5,7 +5,6 @@ import json
 import sys, os
 import validators
 import aiohttp
-import asyncio
 from PIL import Image
 from io import BytesIO
 

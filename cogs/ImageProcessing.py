@@ -3,7 +3,6 @@ from io import BytesIO
 from disnake.ext import commands
 import disnake
 import validators
-import requests
 import aiohttp
 
 
