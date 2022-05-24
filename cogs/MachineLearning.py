@@ -3,7 +3,7 @@
 from disnake.ext import commands
 import disnake
 import os, sys
-import requests
+import aiohttp
 import validators
 
 class Machinelearning(commands.Cog):
@@ -17,7 +17,7 @@ class Machinelearning(commands.Cog):
         self.bot = bot
 
 
-    def detect_labels_uri(self, uri):
+    async def detect_labels_uri(self, uri):
         """Detects labels in the file located in Google Cloud Storage or on the
         Web."""
         api_root = 'https://vision.googleapis.com/v1/images:annotate?key='
@@ -38,10 +38,11 @@ class Machinelearning(commands.Cog):
         }
 
         # make the request
-        r = requests.post(api_root + self.google_key, json=params)
+        async with aiohttp.ClientSession() as session:
+            async with session.post(api_root + self.google_key, json=params) as resp:
+                data = await resp.json()
 
-        # print the response
-        response = r.json()['responses'][0]['labelAnnotations']
+        response = data['responses'][0]['labelAnnotations']
         output = []
         for item in response:
             output.append(f"{item['description']}: {round(item['score'], 2)}")
@@ -56,7 +57,7 @@ class Machinelearning(commands.Cog):
         if not validators.url(image_url):
             return await inter.response.send_message('Please provide a valid URL', ephemeral=True)
 
-        labels = self.detect_labels_uri(image_url)
+        labels = await self.detect_labels_uri(image_url)
         
         # Embed the labels
         embed = disnake.Embed(title='Labels', description='\n'.join(labels))
