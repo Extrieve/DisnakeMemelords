@@ -154,32 +154,43 @@ class ImageProcessing(commands.Cog):
 
     @commands.slash_command(name='blend', description='Blend an image')
     async def blend(self, inter, img_url: str, img_url2: str) -> None:
+
+        await inter.response.defer(with_message='Loading...', ephemeral=False)
+
         if not validators.url(img_url):
-            return await inter.response.send_message('Please provide a valid URL', ephemeral=True)
+            return await inter.followup.send('Please provide a valid URL', ephemeral=True)
 
         if not validators.url(img_url2):
-            return await inter.response.send_message('Please provide a valid URL', ephemeral=True)
+            return await inter.followup.send('Please provide a valid URL', ephemeral=True)
 
         async with aiohttp.ClientSession() as session:
             async with session.get(img_url) as resp:
                 if resp.status != 200:
-                    return await inter.response.send_message('Something went wrong', ephemeral=True)
+                    return await inter.followup.send('Something went wrong', ephemeral=True)
                 data = await resp.content.read()
         
         async with aiohttp.ClientSession() as session:
             async with session.get(img_url2) as resp:
                 if resp.status != 200:
-                    return await inter.response.send_message('Something went wrong', ephemeral=True)
+                    return await inter.followup.send('Something went wrong', ephemeral=True)
                 data2 = await resp.content.read()
-        
 
         bytes_io = BytesIO()
         image = Image.open(BytesIO(data))
         image2 = Image.open(BytesIO(data2))
-        image.blend(image2, 0.5).save(bytes_io, format='PNG')
+
+        # If both images are not the same size, then return an error
+        if image.size != image2.size:
+            return await inter.followup.send('Images must be the same size', ephemeral=True)
+
+        # Convert both images to RGB
+        image = image.convert('RGBA')
+        image2 = image2.convert('RGBA')
+
+        blend = Image.blend(image, image2, alpha=0.5).save(bytes_io, format='PNG')
         bytes_io.seek(0)
         dfile = disnake.File(bytes_io, filename='blend.png')
-        return await inter.response.send_message(file=dfile)
+        return await inter.followup.send(file=dfile)
 
 
     @commands.slash_command(name='resize', description='Resize an image based on percentage')
