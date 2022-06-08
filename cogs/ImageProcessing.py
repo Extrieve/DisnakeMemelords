@@ -211,6 +211,23 @@ class ImageProcessing(commands.Cog):
         dfile = disnake.File(bytes_io, filename='resize.png')
         return await inter.response.send_message(file=dfile)
 
+    
+    @commands.slash_command(name='green', description='Greenify an image')
+    async def greenify(self, inter, img_url: str) -> None:
+        # TODO: Finish the implementation
+        pass
+
+    
+    @commands.slash_command(name='reddify', description='Reddify an image')
+    async def reddify(self, inter, img_url: str) -> None:
+        # TODO: Finish the implementation
+        pass
+
+    @commands.slash_command(name='blueify', description='Blueify an image')
+    async def blueify(self, inter, img_url: str) -> None:
+        # TODO: Finish the implementation
+        pass
+
 
 def setup(bot):
     bot.add_cog(ImageProcessing(bot))
