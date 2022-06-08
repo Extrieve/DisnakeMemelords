@@ -1,10 +1,12 @@
-import disnake
 from disnake.ext import commands, tasks
-from numpy import random
-import requests
+import disnake
+import random
 import json
 import sys, os
 import validators
+import aiohttp
+from PIL import Image
+from io import BytesIO
 
 class GeneralPurpose(commands.Cog):
 
@@ -40,18 +42,21 @@ class GeneralPurpose(commands.Cog):
         base_url = 'https://gotiny.cc/api'
         headers = {'Accept': 'application/json'}
         params = {'input': url}
-        r = requests.post(base_url, headers=headers, json=params)
 
-        if r.status_code != 200:
-            return await inter.response.send_message('Something went wrong', ephemeral=True)
-
-        data = json.loads(r.text)
-        res = 'https://gotiny.cc/' + data[0]['code']
-        await inter.response.send_message(res)
+        async with aiohttp.ClientSession() as session:
+            async with session.post(base_url, json=params, headers=headers) as resp:
+                if resp.status != 200:
+                    return await inter.response.send_message('Something went wrong', ephemeral=True)
+                data = await resp.json()
+                print(data)
+                res = 'https://gotiny.cc/' + data[0]['code']
+                await inter.response.send_message(res)
 
 
     @commands.slash_command(name='meme-generator' ,description='Generate a meme with the available templates')
     async def meme_generator(self, inter, img_url: str, template: Templates) -> None:
+
+        await inter.response.defer(with_message='Loading...', ephemeral=False)
         
         if not validators.url(img_url):
             return await inter.response.send_message('Please provide a valid URL', ephemeral=True)
@@ -59,33 +64,38 @@ class GeneralPurpose(commands.Cog):
         base_url = "https://v1.api.amethyste.moe"
         headers = {'Authorization': f'Bearer {self.ame_token}'}
         data = {'url': img_url}
-        r = requests.post(f'{base_url}/generate/{template}', headers=headers, data=data)
 
-        if r.status_code != (200 or 201):
-            return await inter.response.send_message(f"Error: {r.status_code}")
+        async with aiohttp.ClientSession() as session:
+            final_url = f'{base_url}/generate/{template}'
+            async with session.post(final_url, data=data, headers=headers) as resp:
+                if resp.status != 200:
+                    return await inter.response.send_message('Something went wrong', ephemeral=True)
+                data = await resp.content.read()
 
-        # save request as a png
-        with open(f'ame_{template}.png', 'wb') as f:
-            f.write(r.content)
-        
-        # send image
-        await inter.response.send_message(file=disnake.File(f'ame_{template}.png'))
+        bytes_io = BytesIO()
+        image = Image.open(BytesIO(data))
+        image.save(bytes_io, format='PNG')
+        bytes_io.seek(0)
+        dfile = disnake.File(bytes_io, filename=f'{template}.png')
+        return await inter.followup.send(file=dfile)
 
 
     @commands.slash_command(description='Decode a QR code by providing a ')
     async def qr(self, inter, qr_url: str) -> None: 
+
+        await inter.response.defer(with_message='Loading...', ephemeral=False)
         
         if not validators.url(qr_url):
-            return await inter.response.send_message('Please provide a valid URL', ephemeral=True)
+            return await inter.followup.send('Please provide a valid URL', ephemeral=True)
 
         url = 'http://api.qrserver.com/v1/read-qr-code/?fileurl='
-        r = requests.get(url + qr_url)
+        async with aiohttp.ClientSession() as session:
+            async with session.get(f'{url}{qr_url}') as resp:
+                if resp.status != 200:
+                    return await inter.response.send_message('Something went wrong', ephemeral=True)
+                data = await resp.json()
 
-        if r.status_code != (200 or 204):
-            return await inter.response.send_message(f'Error: {r.status_code}')
-
-        data = r.json()
-        return await inter.response.send_message(data[0]['symbol'][0]['data'])
+        return await inter.followup.send(data[0]['symbol'][0]['data'])
 
 
     @commands.slash_command(name='remove-background', description='Remove the background of an image')
@@ -97,17 +107,20 @@ class GeneralPurpose(commands.Cog):
         base_url = 'https://api.remove.bg/v1.0/removebg'
         headers = {'X-Api-Key': self.bg_key}
         data = {'image_url': img_url}
-        r = requests.post(base_url, headers=headers, data=data)
 
-        if r.status_code != (200 or 201):
-            return await inter.response.send_message(f"Error: {r.status_code}")
+        async with aiohttp.ClientSession() as session:
+            async with session.post(base_url, data=data, headers=headers) as resp:
+                if resp.status != 200:
+                    return await inter.response.send_message('Something went wrong', ephemeral=True)
+                data = await resp.content.read()
 
-        # save request as a png
-        with open(f'bg_removed.png', 'wb') as f:
-            f.write(r.content)
+        bytes_io = BytesIO()
+        image = Image.open(BytesIO(data))
+        image.save(bytes_io, format='PNG')
+        bytes_io.seek(0)
         
         # send image
-        await inter.followup.send(file=disnake.File(f'bg_removed.png'))
+        await inter.followup.send(file=disnake.File(bytes_io, filename='bg_removed.png'))
 
 
     @commands.slash_command(name='movie-clip', description='Get a movie clip from the database')
@@ -135,30 +148,32 @@ class GeneralPurpose(commands.Cog):
         await inter.response.defer(with_message='Loading...', ephemeral=False)
 
         url = 'https://api.themotivate365.com/stoic-quote'
-        r = requests.get(url)
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as resp:
+                if resp.status != 200:
+                    return await inter.response.send_message('Something went wrong', ephemeral=True)
+                data = await resp.json()
 
-        if r.status_code != 200:
-            return await inter.followup.send('Something went wrong', ephemeral=True)
-
-        data = r.json()
         title = data['data']['author']
         quote = data['data']['quote']
         embed = disnake.Embed(title=title, description=quote, color=0x00ff00)
         return await inter.followup.send(embed=embed)
 
 
-    @tasks.loop(hours=meme_time)
-    async def tenor_speech(self) -> None:
+    @tasks.loop(seconds=meme_time)
+    async def test1(self) -> None:
+        print('Waiting...')
         await self.bot.wait_until_ready()
-        print('Tenor Ready')
-        self.meme_time = random.randint(5, 30)
+        # send a message to the channel id = 953357475254505595
         rand_gid = random.choice(self.speech_bubble)
-        await self.bot.get_channel(193188992857014272).send(rand_gid)
+        self.meme_time = random.randint(5, 15)
+        print(f'Time interval: {self.meme_time}')
+        await self.bot.get_channel(953357475254505595).send(rand_gid)
         
 
     @commands.slash_command(name='channel-id', description='Get the channel ID')
     async def channel_id(self, inter) -> None:
-        await inter.response.send_message(inter.channel.id, ephemeral=True)
+        await inter.response.send_message(inter.channel.id)
 
 
 def setup(bot):

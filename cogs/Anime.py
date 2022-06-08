@@ -1,7 +1,6 @@
 from disnake.ext import commands
 from enum import Enum
 import disnake
-import requests
 import json
 import asyncio
 import os, sys
@@ -9,6 +8,7 @@ import csv
 import urllib.parse
 import validators
 import random
+import aiohttp
 
 class Anime(commands.Cog):
 
@@ -27,28 +27,6 @@ class Anime(commands.Cog):
         self.bot = bot
 
     ### Non-command functions ###
-    def get_anime_data(self, anime_name: str) -> list:
-        """
-        Returns the data of the anime with the given name.
-        """
-        if len(anime_name) < 4:
-            raise commands.BadArgument('The anime name must be at least 4 characters long.')
-
-        url = 'https://api.jikan.moe/v4/anime'
-        params = {'q' : anime_name}
-
-        request = requests.get(url, params=params)
-        if request.status_code != 200:
-            raise commands.BadArgument('Anime not found.')
-        
-        data = request.json()
-        names, anime_ids = [], []
-        for anime in data['data']:
-            names.append(anime['title'])
-            anime_ids.append(anime['mal_id'])
-        
-        return list(zip(anime_ids, names))
-
     
     def get_anime_vid(self, anime_id: int) -> dict:
         """
@@ -63,8 +41,28 @@ class Anime(commands.Cog):
         
         return {'openings': openings, 'endings': endings}
 
+    async def get_anime_data(self, anime_name: str) -> list:
+        """
+        Returns the data of the anime with the given name.
+        """
+        if len(anime_name) < 4:
+            raise commands.BadArgument('The anime name must be at least 4 characters long.')
+
+        url = 'https://api.jikan.moe/v4/anime'
+        params = {'q' : anime_name}
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, params=params) as response:
+                data = await response.json()
+
+        names, anime_ids = [], []
+        for anime in data['data']:
+            names.append(anime['title'])
+            anime_ids.append(anime['mal_id'])
+        
+        return list(zip(anime_ids, names))
     
-    def anilist_query(self, anime_id: int) -> dict:
+    async def anilist_query(self, anime_id: int) -> dict:
         
         query = '''
         query ($id: Int) { # Define which variables will be used in the query (id)
@@ -86,125 +84,103 @@ class Anime(commands.Cog):
 
         url = 'https://graphql.anilist.co'
 
-        # Make the HTTP Api request
-        response = requests.post(url, json={'query': query, 'variables': variables})
+        async with aiohttp.ClientSession() as session:
+            async with session.post(url, json={'query': query, 'variables': variables}) as response:
+                if response.status != 200:
+                    raise commands.BadArgument('Anime not found.')
+                data = await response.json()
 
-        if response.status_code != 200:
-            raise Exception('Query failed to run by returning code of {}. {}'.format(response.status_code, response.text))
+        # # Make the HTTP Api request
+        # response = requests.post(url, json={'query': query, 'variables': variables})
 
-        data = response.json()
+        # if response.status_code != 200:
+        #     raise Exception('Query failed to run by returning code of {}. {}'.format(response.status_code, response.text))
+
+        # data = response.json()
         output = {}
         output['title_rom'] = data['data']['Media']['title']['romaji']
         output['title_eng'] = data['data']['Media']['title']['english']
 
         return output
 
-
     @commands.slash_command(name='anime-quote', description='Get a an anime quote.')
     async def anime_quote(self, inter, *, anime_name: str=None, character_name: str=None) -> None:
         """
         Get a quote from an anime.
         """
+
         if anime_name:
-            await inter.response.defer(with_message='Loading...', ephemeral=False)
-
-            url = 'https://animechan.vercel.app/api/quotes/anime?title='
-            r = requests.get(url + anime_name)
-
-            if r.status_code != 200:
-                return await inter.followup.send('Anime not found.', ephemeral=True)
-
-            data = json.loads(r.text)
-            index = 0
-            length = len(data)
-
-            anime_name = data[index]['anime']
-            character_name = data[index]['character']
-            quote = data[index]['quote']
-
-            embed = disnake.Embed(title=anime_name, description=quote, color=0x00FF00)
-            embed.set_author(name=character_name)
-
-            try:
-            # get character img from image search
-                char_url = 'https://imsea.herokuapp.com/api/1?q='
-                params = {'q' : f'{character_name} {anime_name}'}
-                char_r = requests.get(char_url, params=params)
-                if char_r.status_code == 200:
-                    char_data = json.loads(char_r.text)
-                    char_img = char_data['results'][0]
-            except:
-                char_img = None
-
-            if char_img:
-                embed.set_thumbnail(url=char_img)
-
-            await inter.followup.send(embed=embed)
-            msg = await inter.original_message()
-
-            # add reaction to msg
-            await msg.add_reaction('◀️')
-            await msg.add_reaction('▶️')
-
-            def check(reaction, user):
-                return user == inter.author and str(reaction.emoji) in ['◀️', '▶️']
-
-            while True:
-                try:
-                    reaction, user = await self.bot.wait_for('reaction_add', timeout=60.0, check=check)
-                except asyncio.TimeoutError:
-                    return await inter.followup.send('Request timed out.', ephemeral=True)
-                else:
-                    if str(reaction.emoji) == '◀️':
-                        index -= 1
-                        if index < 0:
-                            index = length - 1
-                    elif str(reaction.emoji) == '▶️':
-                        index += 1
-                        if index >= length:
-                            index = 0
-
-                    anime_name = data[index]['anime']
-                    character_name = data[index]['character']
-                    quote = data[index]['quote']
-
-                    embed = disnake.Embed(title=anime_name, description=quote, color=0x00FF00)
-                    embed.set_author(name=character_name)
-                    embed.set_thumbnail(url=char_img)
-                    await msg.edit(embed=embed)
-
-                    await msg.remove_reaction(reaction.emoji, user)
-            
+            url = 'https://animechan.vercel.app/api/quotes/anime?title=' + anime_name
         elif character_name:
-            return await inter.response.send_message('Coming soon!', ephemeral=True)
+            url = 'https://animechan.vercel.app/api/quotes/character?name=' + character_name
+        else:
+            url = 'https://animechan.vercel.app/api/quotes/random'
 
-        url = 'https://animechan.vercel.app/api/random'
-        r = requests.get(url)
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as response:
+                if response.status != 200:
+                    return await inter.response.send_message('Anime not found.', ephemeral=True)
+                data = await response.json()
 
-        if r.status_code!= 200:
-            return await inter.response.send_message('An error occurred while getting a quote.', ephemeral=True)
+        index = 0
+        length = len(data)
 
-        data = json.loads(r.text)
-        anime_name = data['anime']
-        character_name = data['character']
-        quote = data['quote']
-        embed = disnake.Embed(title=f'Anime: {anime_name}\nCharacter: {character_name}', description=quote, color=0x00ff00)
-        
+        character_name = data[index]['character']
+        anime_name = data[index]['anime']
+        quote = data[index]['quote']
+
+        embed = disnake.Embed(title=anime_name, description=quote, color=0x00FF00)
+        embed.set_author(name=character_name)
+
         try:
-            # get character img from image search
             char_url = 'https://imsea.herokuapp.com/api/1?q='
             params = {'q' : f'{character_name} {anime_name}'}
-            char_r = requests.get(char_url, params=params)
-            if char_r.status_code == 200:
-                char_data = json.loads(char_r.text)
-                char_img = char_data['results'][0]
+            async with aiohttp.ClientSession() as session:
+                async with session.get(char_url, params=params) as response:
+                    if response.status == 200:
+                        char_data = await response.json()
+                        char_img = char_data['results'][0]
         except:
             char_img = None
 
         if char_img:
             embed.set_thumbnail(url=char_img)
+        
+        await inter.response.send_message(embed=embed)
+        msg = await inter.original_message()
 
-        return await inter.response.send_message(embed=embed)
+        # add reaction to msg
+        await msg.add_reaction('◀️')
+        await msg.add_reaction('▶️')
+
+        def check(reaction, user):
+            return user == inter.author and str(reaction.emoji) in ['◀️', '▶️']
+
+        while True:
+            try:
+                reaction, user = await self.bot.wait_for('reaction_add', timeout=60.0, check=check)
+            except asyncio.TimeoutError:
+                return await inter.followup.send('Request timed out.', ephemeral=True)
+            else:
+                if str(reaction.emoji) == '◀️':
+                    index -= 1
+                    if index < 0:
+                        index = length - 1
+                elif str(reaction.emoji) == '▶️':
+                    index += 1
+                    if index >= length:
+                        index = 0
+
+                anime_name = data[index]['anime']
+                character_name = data[index]['character']
+                quote = data[index]['quote']
+
+                embed = disnake.Embed(title=anime_name, description=quote, color=0x00FF00)
+                embed.set_author(name=character_name)
+                embed.set_thumbnail(url=char_img)
+                await msg.edit(embed=embed)
+
+                await msg.remove_reaction(reaction.emoji, user)
 
 
     @commands.slash_command(name='anime-picture', description='Get an anime image/gif')
@@ -214,11 +190,14 @@ class Anime(commands.Cog):
             category = random.choice(list(self.Categories))
         
         url = 'https://api.waifu.pics/sfw/'
-        print(category)
-        r = requests.get(f'{url}{category}').text
-        picture = json.loads(r)['url']
-        await inter.response.send_message(picture)
-        
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url + category) as response:
+                if response.status != 200:
+                    return await inter.response.send_message('An error occurred while getting an image.', ephemeral=True)
+                data = await response.json()
+                return await inter.response.send_message(data['url'])
+
 
     @commands.slash_command(name='anime-search', description='Get information and details about an anime')
     async def ani_search(self, inter, query: str) -> None:
@@ -229,12 +208,12 @@ class Anime(commands.Cog):
         url = 'https://api.jikan.moe/v4/anime'
         params = {'q' : query}
 
-        request = requests.get(url, params=params, verify=False)
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, params=params) as resp:
+                if resp.status != 200:
+                    return await inter.response.send_message('Anime not found.', ephemeral=True)
+                data = await resp.json()
 
-        if request.status_code != 200:
-            return await inter.response.send_message('Anime not found.')
-
-        data = request.json()
         results = []
 
         for i, entry in enumerate(data['data']):
@@ -297,12 +276,12 @@ class Anime(commands.Cog):
         url = 'https://api.jikan.moe/v4/manga/'
         params = {'q' : query, 'page' : 1}
 
-        request = requests.get(url, params=params, verify=False)
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, params=params) as resp:
+                if resp.status != 200:
+                    return await inter.response.send_message('Manga not found.', ephemeral=True)
+                data = await resp.json()
 
-        if request.status_code != (200 or 204):
-            return await inter.response.send_message('Manga not found.')
-        
-        data = json.loads(request.text)
         results = []
         for i, entry in enumerate(data['data']):
             results.append(f'{i+1}. {entry["title"]}')
@@ -351,7 +330,7 @@ class Anime(commands.Cog):
         if len(query) < 4:
             return await inter.response.send_message('Search result should be at least 4 characters', ephemeral=True)
 
-        search = self.get_anime_data(query)
+        search = await self.get_anime_data(query)
         if not search:
             return await inter.response.send_message(f'No results for {query}', ephemeral=True)
 
@@ -476,15 +455,17 @@ class Anime(commands.Cog):
             return await inter.response.send_message('Invalid URL.')
 
         parse_url = urllib.parse.quote_plus(scene_url)
-        response = requests.get(f"https://api.trace.moe/search?url={parse_url}").json()
-        
-        if response['error']:
-            return await inter.response.send_message('Could not find anime.')
+        url = f"https://api.trace.moe/search?url={parse_url}"
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as resp:
+                response = await resp.json()
+                if response['error']: 
+                    return await inter.response.send_message('Could not find anime.')
         
         results = response['result']
 
         anime_id = results[0]['anilist']
-        titles = self.anilist_query(anime_id)
+        titles = await self.anilist_query(anime_id)
 
         output = []
         title_rom = titles['title_rom']
@@ -496,7 +477,7 @@ class Anime(commands.Cog):
         embed = disnake.Embed(title=title_rom, description='\n'.join(output), color=0x00ff00)
         embed.set_image(url=scene_url)
         return await inter.response.send_message(embed=embed)
-
         
+
 def setup(bot):
     bot.add_cog(Anime(bot))
