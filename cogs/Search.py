@@ -1,8 +1,7 @@
 from disnake.ext import commands
 import disnake
 import sys, os
-import requests
-import json
+import aiohttp
 import asyncio
 from serpapi import GoogleSearch
 
@@ -16,15 +15,17 @@ class Search(commands.Cog):
         self.bot = bot
 
 
-    def getDefinition(self, word):
-        response = requests.get(
-            f'https://api.dictionaryapi.dev/api/v2/entries/en/{word}')
-        processedResponse = json.loads(response.text)
-        return processedResponse[0]['meanings'][0]['definitions']
+    async def getDefinition(self, word: str) -> str:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(f'https://api.dictionaryapi.dev/api/v2/entries/en/{word}') as resp:
+                if resp.status != 200:
+                    raise Exception('Something went wrong')
+                data = await resp.json()
+                return data[0]['meaning']['definitions'][0]['definition']
 
 
     @commands.slash_command(name='define', description='Get the definition of a word')
-    async def define(self, inter, word):
+    async def define(self, inter, word: str) -> None:
 
         try:
             definition = self.getDefinition(word)
@@ -71,7 +72,7 @@ class Search(commands.Cog):
 
 
     @commands.slash_command(name='image-search', description='Search for an image')
-    async def image_search(self, inter, query):
+    async def image_search(self, inter, query: str) -> None:
 
         await inter.response.defer(with_message='Searching...', ephemeral=False)
 
@@ -120,17 +121,17 @@ class Search(commands.Cog):
                 await msg.edit(embed=embed)
                 await msg.remove_reaction(reaction.emoji, user)
 
-
+    
     @commands.slash_command(name='fast-image-search', description='Search for an image')
-    async def fast_image_search(self, inter, query):
+    async def fast_image_search(self, inter, query: str) -> None:
         url = 'https://imsea.herokuapp.com/api/1?q='
         params = {'q': query}
-        response = requests.get(url, params=params)
-
-        if response.status_code != 200:
-            return await inter.respose.send_message(f'Error: {response.status_code}', ephemeral=True)
-
-        results = json.loads(response.text)
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, params=params) as resp:
+                if resp.status != 200:
+                    return await inter.response.send_message('No results found')
+                results = await resp.json()
+        
         images = results['results']
         print(images)
         length = len(images)
@@ -169,7 +170,7 @@ class Search(commands.Cog):
 
     
     @commands.slash_command(name='yugioh', description='Search for a card')
-    async def yugi(self, inter, search):
+    async def yugi(self, inter, search: str) -> None:
         """
         Search for a card on Yugioh Wiki.
         """
@@ -178,12 +179,12 @@ class Search(commands.Cog):
         params = {
             'name': search
         }
-        response = requests.get(url, params=params)
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, params=params) as response:
+                if response.status != 200:
+                    return await inter.response.send_message('No results found')
+                data = await response.json()
 
-        if response.status_code != 200:
-            return await inter.response.send_message('No results found.', ephemeral=True)
-
-        data = json.loads(response.text)
         
         images = []
         for i in range(len(data['data'][0]['card_images'])):
