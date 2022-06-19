@@ -174,6 +174,36 @@ class GeneralPurpose(commands.Cog):
     async def channel_id(self, inter) -> None:
         await inter.response.send_message(inter.channel.id)
 
+    @commands.slash_command(name="phone-info", description="Get all information related to the phone nummber")
+    async def phone_info(self, inter, phone_num: str) -> None:
+        if not phone_num.isdigit():
+            return await inter.response.send_message('Please provide a valid phone number', ephemeral=True)
+        phone_num = phone_num.replace('-', '')
+
+        await inter.response.defer(with_message='Loading...', ephemeral=False)
+
+        url = "https://phonevalidation.abstractapi.com/v1/?api_key=42253fea4b5645c9a45713308d620752&phone={phone}"
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url.format(phone=phone_num)) as resp:
+                if resp.status != 200:
+                    return await inter.response.send_message('Something went wrong', ephemeral=True)
+                data = await resp.json()
+
+        title = f'Phone: {data["phone"]}'
+        valid = f'Validity: {data["valid"]}'
+        international_format = f'International Format: {data["format"]["international"]}'
+        local_format = f'Local Format: {data["format"]["local"]}'
+        country = f'Country: {data["location"]}'
+        carrier = f'Carrier: {data["carrier"]}'
+        num_type = f'Number Type: {data["type"]}'
+
+        description = [valid, international_format, local_format, country, carrier, num_type]
+        embed = disnake.Embed(title=title, description='\n'.join(description), color=0x00ff00)
+
+        return await inter.followup.send(embed=embed)
+
+
 
 def setup(bot):
     bot.add_cog(GeneralPurpose(bot))
