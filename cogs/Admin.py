@@ -106,7 +106,7 @@ class Admin(commands.Cog):
     @commands.Cog.listener()
     async def on_member_join(self, member: disnake.Member) -> None:
         """On member join, assign the member the default role."""
-        role = disnake.utils.get(member.guild.roles, name='Member')
+        role = disnake.utils.get(member.guild.roles, name='Normies')
         await member.add_roles(role)
         print(f'Added {role.name} to {member.name}')
 
