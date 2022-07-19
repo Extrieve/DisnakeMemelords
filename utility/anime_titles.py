@@ -1,4 +1,4 @@
-from Screenshot import Screenshot_Clipping
+# from Screenshot import Screenshot_Clipping
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
@@ -15,12 +15,13 @@ resolution = "--window-size=1920,1080"
 opt.add_argument(resolution)
 
 # Initialize the service object
-service = Service(r'C:\Selenium\chromedriver_win32\chromedriver.exe')
+# service = Service(r'C:\Selenium\chromedriver_win32\chromedriver.exe')
+service = Service(r'/home/extrieve/Documents/chromedriver/chromedriver')
 # path = r'C:\Selenium\chromedriver_win32\chromedriver.exe'
 driver = webdriver.Chrome(service=service, options=opt)
 
 
-url = 'https://staging.animethemes.moe/wiki/year/2022/spring'
+url = 'https://animethemes.moe/year/2022/summer'
 driver.get(url)
 
 titles = []
@@ -39,5 +40,5 @@ driver.quit()
 titles = [title for title in titles if title not in forbidden]
 print(titles)
 
-titles = ['Aharen-san wa Hakarenai', 'Ao Ashi', "Birdie Wing: Golf Girls' Story", 'Black★★Rock Shooter: Dawn Fall', 'Build Divide: Code White', 'Cap Kakumei Bottleman DX', 'Dance Dance Danseur', 'Date A Live IV', 'Deaimon', 'Estab-Life: Great Escape', 'Gaikotsu Kishi-sama, Tadaima Isekai e Odekakechuu', 'Gunjou no Fanfare', 'Healer Girl', 'Heroine Tarumono! Kiraware Heroine to Naisho no Oshigoto', 'Honzuki no Gekokujou: Shisho ni Naru Tame ni wa Shudan wo Erandeiraremasen 3rd Season', 'Insect Land', 'Kaginado Season 2', 'Kaguya-sama wa Kokurasetai: Ultra Romantic', 'Kawaii dake ja Nai Shikimori-san', 'Kingdom 4th Season', 'Koi wa Sekai Seifuku no Ato de', 'Komi-san wa, Comyushou desu. 2nd Season', 'Kono Healer, Mendokusai', 'Kunoichi Tsubaki no Mune no Uchi', 'ED1', 'Kyoukai Senki Part 2', 'Love All Play',
-          'Love Live! Nijigasaki Gakuen School Idol Doukoukai 2nd Season', 'Machikado Mazoku: 2-choume', 'Magia Record: Mahou Shoujo Madoka☆Magica Gaiden (TV) Final Season - Asaki Yume no Akatsuki', 'ED1', 'Mahoutsukai Reimeiki', 'Meitantei Conan: Zero no Tea Time', 'Onipan!', 'Otome Game Sekai wa Mob ni Kibishii Sekai desu', 'Paripi Koumei', 'ED1', 'Rikei ga Koi ni Ochita no de Shoumei shitemita. r=1-sinθ (Heart)', 'RPG Fudousan', 'Shachiku-san wa Youjo Yuurei ni Iyasaretai.', 'Shadowverse Flame', 'Shijou Saikyou no Daimaou, Murabito A ni Tensei suru', 'Shokei Shoujo no Virgin Road', 'Spy x Family', 'Summer Time Render', 'Tate no Yuusha no Nariagari Season 2', 'Thermae Romae Novae', 'Tiger & Bunny 2', 'Tomodachi Game', 'Ultraman Season 2', 'Yatogame-chan Kansatsu Nikki 4th Season', 'Yu-Gi-Oh! Go Rush!!', 'Yuusha, Yamemasu']
+titles = ['SUMMER', 'Bastard!! Ankoku no Hakaishin (ONA)', 'Summer 2022', 'Bucchigire!', 'Summer 2022', 'Cardfight!! Vanguard: will+Dress', 'Summer 2022', 'Chimimo', 'Summer 2022', 'Engage Kiss', 'Summer 2022', 'Extreme Hearts', 'Summer 2022', 'Hoshi no Samidare', 'Summer 2022', 'Isekai Meikyuu de Harem wo', 'Summer 2022', 'Isekai Ojisan', 'Summer 2022', 'Jashin-chan Dropkick X', 'Summer 2022', 'Kami Kuzu☆Idol', 'Summer 2022', 'Kanojo, Okarishimasu 2nd Season', 'Summer 2022', 'Kinsou no Vermeil: Gakeppuchi Majutsushi wa Saikyou no Yakusai to Mahou Sekaiwo Tsukisusumu', 'Summer 2022', 'Kumichou Musume to Sewagakari', 'Summer 2022', 'Luminous Witches', 'Summer 2022', 'Lycoris Recoil', 'Summer 2022', 'Made in Abyss: Retsujitsu no Ougonkyou',
+          'Summer 2022', 'Mamahaha no Tsurego ga Motokano datta', 'Summer 2022', 'Prima Doll', 'Summer 2022', 'RWBY: Hyousetsu Teikoku', 'Summer 2022', 'Shadows House 2nd Season', 'Summer 2022', 'Shin Tennis no Ouji-sama: U-17 WORLD CUP', 'Summer 2022', 'Shoot! Goal to the Future', 'Summer 2022', 'Soredemo Ayumu wa Yosetekuru', 'Summer 2022', 'Tensei Kenja no Isekai Life: Dai-2 no Shokugyou wo Ete, Sekai Saikyou ni Narimashita', 'Summer 2022', 'Teppen!!!!!!!!!!!!!!!', 'Summer 2022', 'Tokyo Mew Mew New ♡', 'Summer 2022', 'Utawarerumono: Futari no Hakuoro', 'Summer 2022', 'Warau Arsnotoria Sun!', 'Summer 2022', 'Yofukashi no Uta', 'Summer 2022', 'Youkoso Jitsuryoku Shijou Shugi no Kyoushitsu e 2nd Season', 'Summer 2022', 'Yurei Deco', 'Summer 2022']
