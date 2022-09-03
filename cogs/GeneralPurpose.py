@@ -7,6 +7,7 @@ import validators
 import aiohttp
 from PIL import Image
 from io import BytesIO
+from bs4 import BeautifulSoup
 
 class GeneralPurpose(commands.Cog):
 
@@ -14,11 +15,12 @@ class GeneralPurpose(commands.Cog):
 
     cwd = os.getcwd()
     sys.path.append(f'{cwd}..')
-    from config import ame_token, bg_key
+    from config import ame_token, bg_key, weather_key
     from setup import ame_endpoints
     from setup import speech_bubble
     Templates = commands.option_enum(ame_endpoints)
     movie_clips = json.load(open(f'db/movies_db.json', encoding='utf8'))
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)\ AppleWebKit/537.36 (KHTML, like Gecko) \ Chrome/58.0.3029.110 Safari/537.36'}
 
     def __init__(self, bot):
         self.bot = bot
@@ -203,6 +205,30 @@ class GeneralPurpose(commands.Cog):
 
         return await inter.followup.send(embed=embed)
 
+
+    @commands.slash_command(name='weather', description='Get the live weather of a city')
+    async def weather(self, inter, city: str) -> None:
+        await inter.response.defer(with_message='Loading...', ephemeral=False)
+        title = f'Weather in {city}'
+        city = city.replace(' ', '+')
+        url = f'https://www.google.com/search?q={city}\&oq={city}\&aqs=chrome.0.35i39l2j0l4j46j69i60.6128j1j7&sourceid=\chrome&ie=UTF-8'
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, headers=self.headers) as resp:
+                if resp.status != 200:
+                    return await inter.followup.send('Something went wrong', ephemeral=True)
+                data = await resp.text()
+
+        soup = BeautifulSoup(data, 'html.parser')
+        location = soup.select('#wob_loc')[0].getText().strip()
+        time = soup.select('#wob_dts')[0].getText().strip()
+        temp = soup.select('#wob_tm')[0].getText().strip()
+        desc = soup.select('#wob_dc')[0].getText().strip()
+        humidity = soup.select('#wob_hm')[0].getText().strip()
+        description = [location, time, temp, desc, humidity]
+        embed = disnake.Embed(title=title, description='\n'.join(description), color=0x00ff00)
+
+        return await inter.followup.send(embed=embed)
 
 
 def setup(bot):
