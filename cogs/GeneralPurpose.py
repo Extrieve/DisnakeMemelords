@@ -5,6 +5,7 @@ import json
 import sys, os
 import validators
 import aiohttp
+import pywhatkit as kit
 from PIL import Image
 from io import BytesIO
 from bs4 import BeautifulSoup
@@ -220,15 +221,28 @@ class GeneralPurpose(commands.Cog):
                 data = await resp.text()
 
         soup = BeautifulSoup(data, 'html.parser')
-        location = soup.select('#wob_loc')[0].getText().strip()
-        time = soup.select('#wob_dts')[0].getText().strip()
-        temp = soup.select('#wob_tm')[0].getText().strip()
-        desc = soup.select('#wob_dc')[0].getText().strip()
-        humidity = soup.select('#wob_hm')[0].getText().strip()
+        location = soup.select('#wob_loc').getText().strip()
+        time = soup.select('#wob_dts').getText().strip()
+        temp = soup.select('#wob_tm').getText().strip()
+        desc = soup.select('#wob_dc').getText().strip()
+        humidity = soup.select('#wob_hm').getText().strip()
         description = [location, time, temp, desc, humidity]
         embed = disnake.Embed(title=title, description='\n'.join(description), color=0x00ff00)
 
         return await inter.followup.send(embed=embed)
+
+
+    @commands.slash_command(name='ascii-art', description='Produce ascii art from an image')
+    async def ascii_art(self, inter, image: disnake.Attachment) -> None:
+        await inter.response.defer(with_message='Loading...', ephemeral=False)
+
+        if not image:
+            return await inter.followup.send('Please provide an image', ephemeral=True)
+
+        # Store image in BytesIO
+        image = BytesIO(await image.read())
+        kit.image_to_ascii_art(image, 'ascii')
+        return await inter.followup.send(file=disnake.File('ascii.txt'))
 
 
 def setup(bot):
