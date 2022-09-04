@@ -13,8 +13,8 @@ class Bot(commands.Bot):
             intents=disnake.Intents.all(),
             sync_commands_debug=True,
         )
-        os.environ['DISPLAY'] = ':0' # fix for pywhatkit
-        os.environ['XAUTHORITY']='/run/user/1000/gdm/Xauthority' # fix for pywhatkit
+        # os.environ['DISPLAY'] = ':0' # fix for pywhatkit
+        # os.environ['XAUTHORITY']='/run/user/1000/gdm/Xauthority' # fix for pywhatkit
         for cog in setup.cogs:
             try:
                 self.load_extension(cog)
