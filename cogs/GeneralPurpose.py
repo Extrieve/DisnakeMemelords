@@ -24,7 +24,6 @@ class GeneralPurpose(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        os.environ['DISPLAY'] = ':0' # fix for pywhatkit
         # self.tenor_speech.start()
 
     @commands.slash_command(name='avatar', description='Get the avatar of a user.')
