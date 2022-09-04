@@ -37,5 +37,7 @@ google_vision.json
 *.jpg
 *.jpeg
 
+ascii.txt
+
 # Our configuration files
 config.py

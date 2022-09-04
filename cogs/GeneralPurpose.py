@@ -5,6 +5,7 @@ import json
 import sys, os
 import validators
 import aiohttp
+import pywhatkit as kit
 from PIL import Image
 from io import BytesIO
 
@@ -174,6 +175,19 @@ class GeneralPurpose(commands.Cog):
     @commands.slash_command(name='channel-id', description='Get the channel ID')
     async def channel_id(self, inter) -> None:
         await inter.response.send_message(inter.channel.id)
+
+    
+    @commands.slash_command(name='ascii-art', description='Produce ascii art from an image')
+    async def ascii_art(self, inter, image: disnake.Attachment) -> None:
+        await inter.response.defer(with_message='Loading...', ephemeral=False)
+
+        if not image:
+            return await inter.followup.send('Please provide an image', ephemeral=True)
+
+        # Store image in BytesIO
+        image = BytesIO(await image.read())
+        kit.image_to_ascii_art(image, 'ascii')
+        return await inter.followup.send(file=disnake.File('ascii.txt'))
 
 
 def setup(bot):
