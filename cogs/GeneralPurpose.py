@@ -5,6 +5,7 @@ import json
 import sys, os
 import validators
 import aiohttp
+import art
 from PIL import Image
 from io import BytesIO
 
@@ -16,8 +17,7 @@ class GeneralPurpose(commands.Cog):
     sys.path.append(f'{cwd}..')
     ame_token = os.environ['ame_token']
     bg_key = os.environ['bg_key']
-    from setup import ame_endpoints
-    from setup import speech_bubble
+    from setup import ame_endpoints, speech_bubble
     Templates = commands.option_enum(ame_endpoints)
     movie_clips = json.load(open(f'db/movies_db.json', encoding='utf8'))
 
@@ -174,6 +174,23 @@ class GeneralPurpose(commands.Cog):
     @commands.slash_command(name='channel-id', description='Get the channel ID')
     async def channel_id(self, inter) -> None:
         await inter.response.send_message(inter.channel.id)
+
+    
+    @commands.slash_command(name='text-ascii', description='Get ascii art!')
+    async def text_ascii(self, inter, text: str, font: str = 'block') -> None: 
+        if len(text) > 20:
+            return await inter.response.send_message('Please provide a text with less than 20 characters', ephemeral=True)
+
+        if not text:
+            return await inter.response.send_message('Please provide a text', ephemeral=True)
+
+        try:
+            ascii_text = art.text2art(text, font=font)
+            return await inter.response.send_message(f'```{ascii_text}```')
+        except art.artError:
+            font = 'default'
+            ascii_text = art.text2art(text, font=font)
+            return await inter.response.send_message('The font you provided is not valid, using default font\n{ascii_art}', ephemeral=True)
 
     
     # @commands.slash_command(name='ascii-art', description='Produce ascii art from an image')
