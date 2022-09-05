@@ -7,9 +7,20 @@ import aiohttp
 
 
 class ImageProcessing(commands.Cog):
+
+    ascii_characters_by_surface = "`^\",:;Il!i~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$"
+
     def __init__(self, bot):
         self.bot = bot
-    
+
+    def convert_pixel_to_character(self, pixel):
+        (r, g, b) = pixel
+        pixel_brightness = r + g + b
+        max_brightness = 255 * 3
+        brightness_weight = len(self.ascii_characters_by_surface) / max_brightness
+        index = int(pixel_brightness * brightness_weight) - 1
+        return self.ascii_characters_by_surface[index]
+        
     @commands.slash_command(name='greyscale', description='Convert an image to greyscale')
     async def greyscale(self, inter, img_url: str) -> None:
         if not validators.url(img_url):
@@ -193,6 +204,7 @@ class ImageProcessing(commands.Cog):
         return await inter.followup.send(file=dfile)
 
 
+    # TODO: Make sure these methods have the option to attach an image from the getgo -> disnake.Image
     @commands.slash_command(name='resize', description='Resize an image based on percentage')
     async def resize(self, inter, img_url: str, percent: int) -> None:
         if not validators.url(img_url):
@@ -210,6 +222,33 @@ class ImageProcessing(commands.Cog):
         bytes_io.seek(0)
         dfile = disnake.File(bytes_io, filename='resize.png')
         return await inter.response.send_message(file=dfile)
+
+
+    @commands.slash_command(name='ascii-image', description='Get the ASCII version of an image')
+    async def image_to_ascii(self, inter, image: disnake.Attachment) -> None:
+
+        # Transform image to bytesIO
+        image = BytesIO(await image.read())
+        # Load image into PIL Image
+        image = Image.open(image)
+        # Resize image to 100x100
+        print(image.size)
+        image = image.resize((100, 100))
+        print(image.size)
+        (width, height) = image.size
+        ascii_art = []
+        for y in range(0, height - 1):
+            line = ''
+            for x in range(0, width - 1):
+                pixel = image.getpixel((x, y))
+                line += self.convert_pixel_to_character(pixel)
+            ascii_art.append(line)
+
+        with open('ascii.txt', 'w') as f:
+            f.write('\n'.join(ascii_art))
+
+        return await inter.response.send_message(file=disnake.File('ascii.txt'))
+
 
     
     @commands.slash_command(name='green', description='Greenify an image')
