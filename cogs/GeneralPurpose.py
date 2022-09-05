@@ -5,10 +5,9 @@ import json
 import sys, os
 import validators
 import aiohttp
-import pywhatkit as kit
+import art
 from PIL import Image
 from io import BytesIO
-from bs4 import BeautifulSoup
 
 class GeneralPurpose(commands.Cog):
 
@@ -206,43 +205,60 @@ class GeneralPurpose(commands.Cog):
 
         return await inter.followup.send(embed=embed)
 
+    
+    @commands.slash_command(name='text-ascii', description='Get ascii art!')
+    async def text_ascii(self, inter, text: str, font: str = 'block') -> None: 
+        if len(text) > 20:
+            return await inter.response.send_message('Please provide a text with less than 20 characters', ephemeral=True)
 
-    @commands.slash_command(name='weather', description='Get the live weather of a city')
-    async def weather(self, inter, city: str) -> None:
-        await inter.response.defer(with_message='Loading...', ephemeral=False)
-        title = f'Weather in {city}'
-        city = city.replace(' ', '+')
-        url = f'https://www.google.com/search?q={city}\&oq={city}\&aqs=chrome.0.35i39l2j0l4j46j69i60.6128j1j7&sourceid=\chrome&ie=UTF-8'
+        if not text:
+            return await inter.response.send_message('Please provide a text', ephemeral=True)
 
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, headers=self.headers) as resp:
-                if resp.status != 200:
-                    return await inter.followup.send('Something went wrong', ephemeral=True)
-                data = await resp.text()
-
-        soup = BeautifulSoup(data, 'html.parser')
-        location = soup.select('#wob_loc').getText().strip()
-        time = soup.select('#wob_dts').getText().strip()
-        temp = soup.select('#wob_tm').getText().strip()
-        desc = soup.select('#wob_dc').getText().strip()
-        humidity = soup.select('#wob_hm').getText().strip()
-        description = [location, time, temp, desc, humidity]
-        embed = disnake.Embed(title=title, description='\n'.join(description), color=0x00ff00)
-
-        return await inter.followup.send(embed=embed)
+        try:
+            ascii_text = art.text2art(text, font=font)
+            return await inter.response.send_message(f'```{ascii_text}```')
+        except art.artError:
+            font = 'default'
+            ascii_text = art.text2art(text, font=font)
+            return await inter.response.send_message('The font you provided is not valid, using default font\n{ascii_art}', ephemeral=True)
 
 
-    @commands.slash_command(name='ascii-art', description='Produce ascii art from an image')
-    async def ascii_art(self, inter, image: disnake.Attachment) -> None:
-        await inter.response.defer(with_message='Loading...', ephemeral=False)
+    # @commands.slash_command(name='weather', description='Get the live weather of a city')
+    # async def weather(self, inter, city: str) -> None:
+    #     await inter.response.defer(with_message='Loading...', ephemeral=False)
+    #     title = f'Weather in {city}'
+    #     city = city.replace(' ', '+')
+    #     url = f'https://www.google.com/search?q={city}\&oq={city}\&aqs=chrome.0.35i39l2j0l4j46j69i60.6128j1j7&sourceid=\chrome&ie=UTF-8'
 
-        if not image:
-            return await inter.followup.send('Please provide an image', ephemeral=True)
+    #     async with aiohttp.ClientSession() as session:
+    #         async with session.get(url, headers=self.headers) as resp:
+    #             if resp.status != 200:
+    #                 return await inter.followup.send('Something went wrong', ephemeral=True)
+    #             data = await resp.text()
 
-        # Store image in BytesIO
-        image = BytesIO(await image.read())
-        kit.image_to_ascii_art(image, 'ascii')
-        return await inter.followup.send(file=disnake.File('ascii.txt'))
+    #     soup = BeautifulSoup(data, 'html.parser')
+    #     location = soup.select('#wob_loc').getText().strip()
+    #     time = soup.select('#wob_dts').getText().strip()
+    #     temp = soup.select('#wob_tm').getText().strip()
+    #     desc = soup.select('#wob_dc').getText().strip()
+    #     humidity = soup.select('#wob_hm').getText().strip()
+    #     description = [location, time, temp, desc, humidity]
+    #     embed = disnake.Embed(title=title, description='\n'.join(description), color=0x00ff00)
+
+    #     return await inter.followup.send(embed=embed)
+
+
+    # @commands.slash_command(name='ascii-art', description='Produce ascii art from an image')
+    # async def ascii_art(self, inter, image: disnake.Attachment) -> None:
+    #     await inter.response.defer(with_message='Loading...', ephemeral=False)
+
+    #     if not image:
+    #         return await inter.followup.send('Please provide an image', ephemeral=True)
+
+    #     # Store image in BytesIO
+    #     image = BytesIO(await image.read())
+    #     kit.image_to_ascii_art(image, 'ascii')
+    #     return await inter.followup.send(file=disnake.File('ascii.txt'))
 
 
 def setup(bot):
