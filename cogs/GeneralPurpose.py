@@ -216,10 +216,29 @@ class GeneralPurpose(commands.Cog):
 
         try:
             ascii_text = art.text2art(text, font=font)
+            
+            if len(ascii_text) > 2000:
+                # convert to text file as BytesIO
+                bytes_io = BytesIO()
+                bytes_io.write(ascii_text.encode())
+                bytes_io.seek(0)
+                file = disnake.File(bytes_io, filename='ascii_txt.txt')
+                return await inter.response.send_message('Your message surpassed Discord 2000 character limit so we converted it to txt :)\n' ,file=file)
+
             return await inter.response.send_message(f'```{ascii_text}```')
+
         except art.artError:
             font = 'default'
             ascii_text = art.text2art(text, font=font)
+            
+            if len(ascii_text) > 2000:
+                # convert to text file as BytesIO
+                bytes_io = BytesIO()
+                bytes_io.write(ascii_text.encode())
+                bytes_io.seek(0)
+                file = disnake.File(bytes_io, filename='ascii_txt.txt')
+                return await inter.response.send_message('Your message surpassed Discord 2000 character limit so we converted it to txt :)\n' ,file=file)
+
             return await inter.response.send_message('The font you provided is not valid, using default font\n{ascii_art}', ephemeral=True)
 
 
