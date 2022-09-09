@@ -16,6 +16,7 @@ class GeneralPurpose(commands.Cog):
     cwd = os.getcwd()
     sys.path.append(f'{cwd}..')
     ame_token = os.environ['ame_token']
+    phone_key = os.environ['phone_key']
     bg_key = os.environ['bg_key']
     from setup import ame_endpoints, speech_bubble
     Templates = commands.option_enum(ame_endpoints)
@@ -174,6 +175,38 @@ class GeneralPurpose(commands.Cog):
     @commands.slash_command(name='channel-id', description='Get the channel ID')
     async def channel_id(self, inter) -> None:
         await inter.response.send_message(inter.channel.id)
+
+    
+    @commands.slash_command(name="phone-info", description="Get all information related to the phone nummber")
+    async def phone_info(self, inter, phone_num: str, country_code: str = '1') -> None:
+        # Getting rid of special chars
+        phone_num = phone_num.replace('-', '').replace('(', '').replace(')', '').replace(' ', '').replace('+', '')
+        phone_num = f'{country_code}{phone_num}'
+        if not phone_num.isdigit():
+            return await inter.response.send_message('Please provide a valid phone number', ephemeral=True)
+
+        await inter.response.defer(with_message='Loading...', ephemeral=False)
+
+        url = "https://phonevalidation.abstractapi.com/v1/?api_key={self.phone_key}&phone={phone}"
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url.format(phone=phone_num)) as resp:
+                if resp.status != 200:
+                    return await inter.response.send_message('Something went wrong', ephemeral=True)
+                data = await resp.json()
+
+        title = f'Phone: {data["phone"]}'
+        valid = f'Validity: {data["valid"]}'
+        international_format = f'International Format: {data["format"]["international"]}'
+        local_format = f'Local Format: {data["format"]["local"]}'
+        country = f'Country: {data["location"]}'
+        carrier = f'Carrier: {data["carrier"]}'
+        num_type = f'Number Type: {data["type"]}'
+
+        description = [valid, international_format, local_format, country, carrier, num_type]
+        embed = disnake.Embed(title=title, description='\n'.join(description), color=0x00ff00)
+
+        return await inter.followup.send(embed=embed)
 
     
     @commands.slash_command(name='text-ascii', description='Get ascii art!')
