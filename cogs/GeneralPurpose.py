@@ -177,10 +177,12 @@ class GeneralPurpose(commands.Cog):
         await inter.response.send_message(inter.channel.id)
 
     @commands.slash_command(name="phone-info", description="Get all information related to the phone nummber")
-    async def phone_info(self, inter, phone_num: str) -> None:
+    async def phone_info(self, inter, phone_num: str, country_code: str = '1') -> None:
+        # Getting rid of special chars
+        phone_num = phone_num.replace('-', '').replace('(', '').replace(')', '').replace(' ', '').replace('+', '')
+        phone_num = f'{country_code}{phone_num}'
         if not phone_num.isdigit():
             return await inter.response.send_message('Please provide a valid phone number', ephemeral=True)
-        phone_num = phone_num.replace('-', '')
 
         await inter.response.defer(with_message='Loading...', ephemeral=False)
 
