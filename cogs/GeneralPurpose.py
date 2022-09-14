@@ -5,7 +5,6 @@ import json
 import sys, os
 import validators
 import aiohttp
-import art
 from PIL import Image
 from io import BytesIO
 
@@ -15,10 +14,10 @@ class GeneralPurpose(commands.Cog):
 
     cwd = os.getcwd()
     sys.path.append(f'{cwd}..')
-    from config import ame_token, bg_key, weather_key
-    from setup import ame_endpoints
-    from setup import speech_bubble
+    from config import ame_token, bg_key
+    from setup import ame_endpoints, speech_bubble, horoscope
     Templates = commands.option_enum(ame_endpoints)
+    Horoscope = commands.option_enum(horoscope)
     movie_clips = json.load(open(f'db/movies_db.json', encoding='utf8'))
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)\ AppleWebKit/537.36 (KHTML, like Gecko) \ Chrome/58.0.3029.110 Safari/537.36'}
 
@@ -242,6 +241,27 @@ class GeneralPurpose(commands.Cog):
                 return await inter.response.send_message('Your message surpassed Discord 2000 character limit so we converted it to txt :)\n' ,file=file)
 
             return await inter.response.send_message('The font you provided is not valid, using default font\n{ascii_art}', ephemeral=True)
+
+
+    @commands.slash_command(name='horoscope', description='Get your horoscope fortune for the day.')
+    async def horoscope(self, inter, sign: Horoscope) -> None: 
+        url = 'https://aztro.sameerkumar.website/'
+        params = (
+        ('sign', sign),
+        ('day', 'today'),
+        )
+
+        async with aiohttp.ClientSession() as session:
+            async with session.post(url, params=params) as resp:
+                if resp.status != 200:
+                    return await inter.response.send_message('Something went wrong', ephemeral=True)
+                data = await resp.json()
+
+        title = f'Horoscope for {sign.capitalize()} -> {data["current_date"]}'
+        description = [f"Today's fortune: {data['description']}"]
+        embed = disnake.Embed(title=title, description='\n'.join(description), color=0x00ff00)
+
+        return await inter.response.send_message(embed=embed)
 
 
     # @commands.slash_command(name='weather', description='Get the live weather of a city')
