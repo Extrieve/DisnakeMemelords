@@ -16,6 +16,7 @@ available_contests = {'codeforces': ('https://play-lh.googleusercontent.com/EkSl
                      'kick_start': ('https://bookassist.org/wp-content/uploads/2021/07/google-logo.jpg', '%Y-%m-%dT%H:%M:%S.%LZ'), 
                      'leet_code': ('https://leetcode.com/static/images/LeetCode_logo_rvs.png', '%Y-%m-%dT%H:%M:%S.%LZ')}
 
+horoscope = ['aries', 'taurus', 'gemini', 'cancer', 'leo', 'virgo', 'libra', 'scorpio', 'sagittarius', 'capricorn', 'aquarius', 'pisces']
 
 speech_bubble = ['https://media.tenor.com/images/4e8676ec3940a77980722881e27995bb/tenor.gif',
 'https://media.tenor.com/images/c3930fc34f5dc77aafe2acf9297a7f20/tenor.gif', 'https://media.tenor.com/images/5ee71c5e92aa0c578749f458b8afc602/tenor.gif',

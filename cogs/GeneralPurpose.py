@@ -18,8 +18,9 @@ class GeneralPurpose(commands.Cog):
     ame_token = os.environ['ame_token']
     phone_key = os.environ['phone_key']
     bg_key = os.environ['bg_key']
-    from setup import ame_endpoints, speech_bubble
+    from setup import ame_endpoints, speech_bubble, horoscope
     Templates = commands.option_enum(ame_endpoints)
+    Horoscope = commands.option_enum(horoscope)
     movie_clips = json.load(open(f'db/movies_db.json', encoding='utf8'))
 
     def __init__(self, bot):
