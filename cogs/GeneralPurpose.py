@@ -245,6 +245,27 @@ class GeneralPurpose(commands.Cog):
             return await inter.response.send_message('The font you provided is not valid, using default font\n{ascii_art}', ephemeral=True)
 
     
+    @commands.slash_command(name='horoscope', description='Get your horoscope fortune for the day.')
+    async def horoscope(self, inter, sign: Horoscope) -> None: 
+        url = 'https://aztro.sameerkumar.website/'
+        params = (
+        ('sign', sign),
+        ('day', 'today'),
+        )
+
+        async with aiohttp.ClientSession() as session:
+            async with session.post(url, params=params) as resp:
+                if resp.status != 200:
+                    return await inter.response.send_message('Something went wrong', ephemeral=True)
+                data = await resp.json()
+
+        title = f'Horoscope for {sign.capitalize()} -> {data["current_date"]}'
+        description = [f"Today's fortune: {data['description']}"]
+        embed = disnake.Embed(title=title, description='\n'.join(description), color=0x00ff00)
+
+        return await inter.response.send_message(embed=embed)
+
+    
     # @commands.slash_command(name='ascii-art', description='Produce ascii art from an image')
     # async def ascii_art(self, inter, image: disnake.Attachment) -> None:
     #     await inter.response.defer(with_message='Loading...', ephemeral=False)
