@@ -265,6 +265,25 @@ class GeneralPurpose(commands.Cog):
         return await inter.response.send_message(embed=embed)
 
 
+    @commands.slash_command(name='random-person', description='Randomly generate the face of a person')
+    async def random_person(self, inter) -> None:
+        url = 'https://thispersondoesnotexist.com/image'
+        await inter.response.defer(with_message='Loading...', ephemeral=False)
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as resp:
+                if resp.status != 200:
+                    return await inter.followup.send('Something went wrong', ephemeral=True)
+                data = await resp.read()
+
+        image = BytesIO(data)
+        image.seek(0)
+        file = disnake.File(image, filename='random_person.png')
+
+        return await inter.followup.send(file=file, ephemeral=False)
+
+
+
     # @commands.slash_command(name='weather', description='Get the live weather of a city')
     # async def weather(self, inter, city: str) -> None:
     #     await inter.response.defer(with_message='Loading...', ephemeral=False)
