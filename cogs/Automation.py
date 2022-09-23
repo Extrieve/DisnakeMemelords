@@ -10,6 +10,8 @@ import disnake
 import asyncio
 import os
 import validators
+import time
+import requests
 
 class Automation(commands.Cog):
     """Automation Cog dedicated to scrape data using Selenium and/or BeautifulSoup."""
@@ -21,7 +23,8 @@ class Automation(commands.Cog):
     opt.add_argument('--disable-dev-shm-usage')
     resolution = "--window-size=1920,1080"
     opt.add_argument(resolution)
-    service = Service(r'/home/extrieve/Documents/chromedriver/chromedriver')
+    # service = Service(r'/home/extrieve/Documents/chromedriver/chromedriver') # Linux path
+    service = Service(r'C:\Selenium\chromedriver.exe') # Windows Path
     driver = webdriver.Chrome(service=service, options=opt)
 
     regions = {'na': ('North America', '🇺🇸'), 'euw': ('Europe West', '🇪🇺'), 'br': (
@@ -33,6 +36,38 @@ class Automation(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+
+
+    def get_download_url(self, video_url):
+        url = 'https://en.y2mate.is/54/youtube-to-mp4.html'
+        self.driver.get(url)
+        self.driver.find_element_by_id('txtUrl').send_keys(video_url)
+        self.driver.find_element_by_id('btnSubmit').click()
+
+        # Wait until 'tableVideo' is loaded
+        WebDriverWait(self.driver, 20).until(EC.presence_of_element_located((By.CLASS_NAME, 'tableVideo')))
+
+        table = self.driver.find_element_by_class_name('tableVideo')
+
+        # iterate through the table and save information
+        for row in table.find_elements_by_tag_name('tr'):
+            # the third element of the row is a button, which we click to download the video
+            for td in row.find_elements_by_tag_name('td'):
+                
+                # if td contains button, click it
+                if td.find_elements_by_tag_name('button'):
+                    button = td.find_element(By.TAG_NAME, 'button')
+                    button.click()
+                    # wait 5 seconds and press the button again
+                    time.sleep(5)
+                    button = td.find_element(By.TAG_NAME, 'button')
+                    # get a tag inside the button
+                    a = button.find_element(By.TAG_NAME, 'a')
+                    # get the href attribute of the a tag
+                    href = a.get_attribute('href')
+                    return href
+
+        return None
 
     @commands.slash_command(name='twitter-embed-video', description='Get the embed video of a tweet')
     async def twitter_embed_video(self, inter, url: str) -> None:
@@ -69,7 +104,29 @@ class Automation(commands.Cog):
         self.driver.quit()
 
         return await inter.followup.send(links[0], ephemeral=False)
+
+
+    @commands.slash_command(name='youtube-mp4', description='Get the mp4 of a youtube video')
+    async def youtube_mp4(self, inter, url: str) -> None:
+        """Get the mp4 of a youtube video."""
+        if not validators.url(url):
+            return await inter.response.send_message('Please provide a valid URL', ephemeral=True)
+
+        if 'youtube' not in url:
+            return await inter.response.send_message('Please provide a valid YouTube URL', ephemeral=True)
+
+        await inter.response.defer(with_message='Loading...', ephemeral=False)
+
+        download_url = self.get_download_url(url)
+        print(download_url)
+
+        if download_url:
+            r = requests.get(download_url, allow_redirects=True)
+            with open('video.mp4', 'wb') as f:
+                f.write(r.content)
+                return await inter.followup.send(file=disnake.File('video.mp4'), ephemeral=False)
         
+        return await inter.followup.send('Something went wrong', ephemeral=False)
 
     @commands.slash_command(name='opgg-livematch', description='Get the live match of an op.gg summoner')
     async def opgg_livematch(self, inter, summoner: str, region: Regions) -> None: 
