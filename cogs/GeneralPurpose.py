@@ -297,12 +297,17 @@ class GeneralPurpose(commands.Cog):
             return await inter.followup.send('No mime type found for your video.', ephemeral=True)
 
         stream.download(filename='youtube.mp4', output_path='db/')
-        video = disnake.File('db/youtube.mp4', filename='youtube.mp4')
 
-        # embed = disnake.Embed(title=yt.title, description=yt.description, color=0x00ff00)
-        # embed.set_image(url=yt.thumbnail_url)
+        try:
+            video = disnake.File('db/youtube.mp4', filename='youtube.mp4')
 
-        return await inter.followup.send(file=video, ephemeral=False)
+            # embed = disnake.Embed(title=yt.title, description=yt.description, color=0x00ff00)
+            # embed.set_image(url=yt.thumbnail_url)
+
+            return await inter.followup.send(file=video, ephemeral=False)
+
+        except Exception as e:
+            return await inter.followup.send('The video is too large for Discord. We apologize for the inconvenience.', ephemeral=True)
 
     
     # @commands.slash_command(name='ascii-art', description='Produce ascii art from an image')
