@@ -286,6 +286,10 @@ class GeneralPurpose(commands.Cog):
     
     @commands.slash_command(name='youtube-embed', description='Embed a youtube video')
     async def youtube_embed(self, inter, url: str) -> None: 
+
+        if not validators.url(url) or not 'youtube.com' in url:
+            return await inter.response.send_message('Please provide a valid url', ephemeral=True)
+
         yt = YouTube(url)
         await inter.response.defer(with_message='Loading...', ephemeral=False)
 
