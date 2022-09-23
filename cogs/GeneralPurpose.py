@@ -8,6 +8,7 @@ import aiohttp
 import art
 from PIL import Image
 from io import BytesIO
+from pytube import YouTube
 
 class GeneralPurpose(commands.Cog):
 
@@ -281,6 +282,25 @@ class GeneralPurpose(commands.Cog):
         file = disnake.File(image, filename='random_person.png')
 
         return await inter.followup.send(file=file, ephemeral=False)
+
+    
+    @commands.slash_command(name='youtube-embed', description='Embed a youtube video')
+    async def youtube_embed(self, inter, url: str) -> None: 
+        yt = YouTube(url)
+        await inter.response.defer(with_message='Loading...', ephemeral=False)
+
+        stream = yt.streams.filter(progressive=True, file_extension='mp4').order_by('resolution').asc().first()
+
+        if not stream:
+            return await inter.followup.send('No mime type found for your video.', ephemeral=True)
+
+        stream.download(filename='youtube.mp4', output_path='db/')
+        video = disnake.File('db/youtube.mp4', filename='youtube.mp4')
+
+        # embed = disnake.Embed(title=yt.title, description=yt.description, color=0x00ff00)
+        # embed.set_image(url=yt.thumbnail_url)
+
+        return await inter.followup.send(file=video, ephemeral=False)
 
 
 

@@ -40,3 +40,10 @@ ascii.txt
 
 # Our configuration files
 config.py
+
+
+# Video files
+*.mp4
+*.avi
+*.mov
+*.mkv
