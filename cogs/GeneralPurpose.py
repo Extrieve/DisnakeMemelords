@@ -6,6 +6,8 @@ import sys, os
 import validators
 import aiohttp
 import art
+import asyncio
+import ffmpeg
 from PIL import Image
 from io import BytesIO
 from pytube import YouTube
@@ -26,6 +28,39 @@ class GeneralPurpose(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         # self.test1.start()
+
+
+    def compress_video(video_full_path, output_file_name, target_size):
+    # Reference: https://en.wikipedia.org/wiki/Bit_rate#Encoding_bit_rate
+        min_audio_bitrate = 32000
+        max_audio_bitrate = 256000
+
+        probe = ffmpeg.probe(video_full_path)
+        # Video duration, in s.
+        duration = float(probe['format']['duration'])
+        # Audio bitrate, in bps.
+        audio_bitrate = float(next(
+            (s for s in probe['streams'] if s['codec_type'] == 'audio'), None)['bit_rate'])
+        # Target total bitrate, in bps.
+        target_total_bitrate = (target_size * 1024 * 8) / (1.073741824 * duration)
+
+        # Target audio bitrate, in bps
+        if 10 * audio_bitrate > target_total_bitrate:
+            audio_bitrate = target_total_bitrate / 10
+            if audio_bitrate < min_audio_bitrate < target_total_bitrate:
+                audio_bitrate = min_audio_bitrate
+            elif audio_bitrate > max_audio_bitrate:
+                audio_bitrate = max_audio_bitrate
+        # Target video bitrate, in bps.
+        video_bitrate = target_total_bitrate - audio_bitrate
+
+        i = ffmpeg.input(video_full_path)
+        ffmpeg.output(i, os.devnull,
+                    **{'c:v': 'libx264', 'b:v': video_bitrate, 'pass': 1, 'f': 'mp4'}
+                    ).overwrite_output().run()
+        ffmpeg.output(i, output_file_name,
+                    **{'c:v': 'libx264', 'b:v': video_bitrate, 'pass': 2, 'c:a': 'aac', 'b:a': audio_bitrate}
+                    ).overwrite_output().run()
 
     @commands.slash_command(name='avatar', description='Get the avatar of a user.')
     async def avatar(self, inter, *, user: disnake.Member = None) -> None:
@@ -302,15 +337,26 @@ class GeneralPurpose(commands.Cog):
 
         try:
             video = disnake.File('db/youtube.mp4', filename='youtube.mp4')
-
-            # embed = disnake.Embed(title=yt.title, description=yt.description, color=0x00ff00)
-            # embed.set_image(url=yt.thumbnail_url)
-
             return await inter.followup.send(file=video, ephemeral=False)
 
         except Exception as e:
-            return await inter.followup.send('The video is too large for Discord. We apologize for the inconvenience.', ephemeral=True)
+            
+            await inter.followup.send(f'Filesize is greater than 8mb converting, reducing the filesize', ephemeral=True)
 
+            probe = ffmpeg.probe('db/youtube.mp4')
+            duration = float(probe['format']['duration'])
+
+            best_min_size = (32000 + 100000) * (1.073741824 * duration) / (8 * 1024)
+
+            if best_min_size > 8:
+                return await inter.followup.send('Optimal file reduction is greater than 8mb, please try again with a shorter video', ephemeral=True)
+
+            await inter.followup.send(f'Starting compression...', ephemeral=True)
+
+            self.compress_video('db/youtube.mp4', 'db/compressed_youtube.mp4', best_min_size)
+            video = disnake.File('db/compressed_youtube.mp4', filename='compressed_youtube.mp4')
+
+            return await inter.followup.send(file=video, ephemeral=False)
 
 
     # @commands.slash_command(name='weather', description='Get the live weather of a city')
