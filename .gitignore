@@ -41,3 +41,8 @@ ascii.txt
 
 # Our configuration files
 config.py
+
+*.mp4
+*.avi
+*.mov
+
