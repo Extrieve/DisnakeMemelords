@@ -106,7 +106,7 @@ class GeneralPurpose(commands.Cog):
             if os.path.getsize(output_file_name) <= size_upper_bound * 1024:
                 return output_file_name
             elif os.path.getsize(output_file_name) < os.path.getsize(video_full_path):  # Do it again
-                return compress_video(output_file_name, size_upper_bound)
+                return self.compress_video(output_file_name, size_upper_bound)
             else:
                 return False
         except FileNotFoundError as e:
