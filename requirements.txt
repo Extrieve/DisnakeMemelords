@@ -1,4 +1,5 @@
-ffmpeg-python
+ffmpeg==1.5
+ffmpeg-python==0.2.0
 aiohttp==3.8.1
 aiosignal==1.2.0
 art==5.7
