@@ -30,7 +30,7 @@ class GeneralPurpose(commands.Cog):
         # self.test1.start()
 
 
-    def compress_video(video_full_path, output_file_name, target_size):
+    def compress_video(self, video_full_path, output_file_name, target_size):
     # Reference: https://en.wikipedia.org/wiki/Bit_rate#Encoding_bit_rate
         min_audio_bitrate = 32000
         max_audio_bitrate = 256000
@@ -341,19 +341,9 @@ class GeneralPurpose(commands.Cog):
 
         except Exception as e:
             
-            await inter.followup.send(f'Filesize is greater than 8mb converting, reducing the filesize', ephemeral=True)
+            await inter.followup.send(f'Filesize is greater than 8mb converting, reducing the filesize\nStarting compression...', ephemeral=True)
 
-            probe = ffmpeg.probe('db/youtube.mp4')
-            duration = float(probe['format']['duration'])
-
-            best_min_size = (32000 + 100000) * (1.073741824 * duration) / (8 * 1024)
-
-            if best_min_size > 8:
-                return await inter.followup.send('Optimal file reduction is greater than 8mb, please try again with a shorter video', ephemeral=True)
-
-            await inter.followup.send(f'Starting compression...', ephemeral=True)
-
-            self.compress_video('db/youtube.mp4', 'db/compressed_youtube.mp4', best_min_size)
+            self.compress_video('db/youtube.mp4', 'db/compressed_youtube1.mp4', 8)
             video = disnake.File('db/compressed_youtube.mp4', filename='compressed_youtube.mp4')
 
             return await inter.followup.send(file=video, ephemeral=False)
