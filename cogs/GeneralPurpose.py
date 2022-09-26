@@ -386,16 +386,18 @@ class GeneralPurpose(commands.Cog):
             return await inter.followup.send('No mime type found for your video.', ephemeral=True)
 
         stream.download(filename='youtube.mp4', output_path='db/')
-
-        # check if size is larger than 8mb
-        if os.path.getsize('db/youtube.mp4') > 8388608:
+        size = os.path.getsize('db/youtube.mp4')
+        # check if size is larger than 8mb and less than 50mb
+        if size > 8388608 and size < 52428800:
             await inter.followup.send('Your video is too large to send normally, compressing your video...', ephemeral=True)
             self.compress_video('db/youtube.mp4', 8 * 1000)
             file = disnake.File('db/youtubecps_.mp4', filename='youtubecps_.mp4')
             return await inter.followup.send(file=file, ephemeral=False)
+            
+        elif size > 52428800:
+            return await inter.followup.send('Your video is too large to send normally, please try a different video.', ephemeral=True)
 
         file = disnake.File('db/youtube.mp4', filename='youtube.mp4')
-
         return await inter.followup.send(file=file, ephemeral=False)
 
 

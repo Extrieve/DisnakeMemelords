@@ -47,3 +47,7 @@ config.py
 *.avi
 *.mov
 *.mkv
+
+
+# log files
+*.log
