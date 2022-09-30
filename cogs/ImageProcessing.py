@@ -5,8 +5,6 @@ import disnake
 import validators
 import aiohttp
 import random
-import asyncio
-
 
 class ImageProcessing(commands.Cog):
 
@@ -257,6 +255,7 @@ class ImageProcessing(commands.Cog):
     async def tarot(self, inter) -> None:
 
         cards = []
+        combine_image = None
         for _ in range(3):
             # flip a coin to see if we flip the card
             flip = random.choice([True, False])
@@ -274,56 +273,28 @@ class ImageProcessing(commands.Cog):
                         return await inter.response.send_message('Something went wrong', ephemeral=True)
                     data = await resp.content.read()
 
-            # convert to bytesIO
-            bytes_io = BytesIO()
-            bytes_io.write(data)
-            bytes_io.seek(0)
-
-            # reverse the image if flip
+            # convert to PIL Image
+            image = Image.open(BytesIO(data))
+            # flip the card if we need to
             if flip:
-                image = Image.open(bytes_io)
-                image = image.transpose(Image.FLIP_LEFT_RIGHT)
-                image.save(bytes_io, format='PNG')
-                bytes_io.seek(0)
-
+                # rotate 180 degrees
+                image = image.rotate(180)
             # add the card to the list
-            cards.append(disnake.File(bytes_io, filename=f'{card}.png'))
-        
-        print(cards)
+            cards.append(image)
 
-        index = 0
-        embed = disnake.Embed(title='Your Tarot Cards', description='Here are your three cards')
-        embed.set_image(url=f'attachment://{cards[index].filename}')
+        # combine the cards
+        combine_image = Image.new('RGB', (cards[0].width * 3, cards[0].height))
+        combine_image.paste(cards[0], (0, 0))
+        combine_image.paste(cards[1], (cards[0].width, 0))
+        combine_image.paste(cards[2], (cards[0].width * 2, 0))
 
-        await inter.response.send_message(embed=embed, file=cards[index])
-        msg = await inter.original_message()
+        # save the image
+        bytes_io = BytesIO()
+        combine_image.save(bytes_io, format='PNG')
+        bytes_io.seek(0)
+        dfile = disnake.File(bytes_io, filename='tarot.png')
 
-        await msg.add_reaction('◀️')
-        await msg.add_reaction('▶️')
-
-        # Wait for a reaction
-        def check(reaction, user):
-            return user == inter.author and str(reaction.emoji) in ['◀️', '▶️'] and reaction.message.id == msg.id
-        
-        while True:
-            try:
-                reaction, user = await self.bot.wait_for('reaction_add', timeout=30.0, check=check)
-            except asyncio.TimeoutError:
-                return await inter.followup.send('Timed out.')
-
-            if str(reaction.emoji) == '◀️':
-                index -= 1
-                if index < 0:
-                    index = len(cards) - 1
-
-            elif str(reaction.emoji) == '▶️':
-                index += 1
-                if index > len(cards) - 1:
-                    index = 0
-
-            embed.set_image(url=f'attachment://{cards[index].filename}')
-            await msg.edit(embed=embed, file=cards[index])
-            await msg.remove_reaction(reaction, user)
+        return await inter.response.send_message(file=dfile)
 
     
     @commands.slash_command(name='green', description='Greenify an image')
