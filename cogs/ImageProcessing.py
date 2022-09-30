@@ -4,14 +4,17 @@ from disnake.ext import commands
 import disnake
 import validators
 import aiohttp
+import random
 
 
 class ImageProcessing(commands.Cog):
 
-    ascii_characters_by_surface = "`^\",:;Il!i~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$"
+    ascii_characters_by_surface = r"`^\",:;Il!i~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$"
+    from setup import tarot_deck
 
     def __init__(self, bot):
         self.bot = bot
+
 
     def convert_pixel_to_character(self, pixel):
         (r, g, b) = pixel
@@ -247,6 +250,52 @@ class ImageProcessing(commands.Cog):
             f.write('\n'.join(ascii_art))
 
         return await inter.response.send_message(file=disnake.File('ascii.txt'))
+
+
+    @commands.slash_command(name='tarot', description='Get three random tarot cards')
+    async def tarot(self, inter) -> None:
+
+        cards = []
+        combine_image = None
+        for _ in range(3):
+            # flip a coin to see if we flip the card
+            flip = random.choice([True, False])
+            # get a random card
+            card = random.choice(list(self.tarot_deck.keys()))
+            print(card)
+
+            while card in cards:
+                card = random.choice(list(self.tarot_deck.keys()))
+
+            # load the card image
+            async with aiohttp.ClientSession() as session:
+                async with session.get(self.tarot_deck[card]) as resp:
+                    if resp.status != 200:
+                        return await inter.response.send_message('Something went wrong', ephemeral=True)
+                    data = await resp.content.read()
+
+            # convert to PIL Image
+            image = Image.open(BytesIO(data))
+            # flip the card if we need to
+            if flip:
+                # rotate 180 degrees
+                image = image.rotate(180)
+            # add the card to the list
+            cards.append(image)
+
+        # combine the cards
+        combine_image = Image.new('RGB', (cards[0].width * 3, cards[0].height))
+        combine_image.paste(cards[0], (0, 0))
+        combine_image.paste(cards[1], (cards[0].width, 0))
+        combine_image.paste(cards[2], (cards[0].width * 2, 0))
+
+        # save the image
+        bytes_io = BytesIO()
+        combine_image.save(bytes_io, format='PNG')
+        bytes_io.seek(0)
+        dfile = disnake.File(bytes_io, filename='tarot.png')
+
+        return await inter.response.send_message(file=dfile)
 
     
     @commands.slash_command(name='green', description='Greenify an image')
