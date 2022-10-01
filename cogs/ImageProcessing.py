@@ -256,16 +256,13 @@ class ImageProcessing(commands.Cog):
 
         cards = []
         combine_image = None
+        options = list(self.tarot_deck.keys())
         for _ in range(3):
             # flip a coin to see if we flip the card
             flip = random.choice([True, False])
             # get a random card
-            card = random.choice(list(self.tarot_deck.keys()))
-            print(card)
-
-            while card in cards:
-                card = random.choice(list(self.tarot_deck.keys()))
-
+            card = random.choice(options)
+            options.pop(options.index(card))
             # load the card image
             async with aiohttp.ClientSession() as session:
                 async with session.get(self.tarot_deck[card]) as resp:
