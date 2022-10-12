@@ -14,13 +14,13 @@ resolution = "--window-size=1920,1080"
 opt.add_argument(resolution)
 
 # Initialize the service object
-# service = Service(r'C:\Selenium\chromedriver_win32\chromedriver.exe')
-service = Service(r'/home/extrieve/Documents/chromedriver/chromedriver')
+service = Service(r'C:\Selenium\chromedriver_win32\chromedriver.exe')
+# service = Service(r'/home/extrieve/Documents/chromedriver/chromedriver')
 # path = r'C:\Selenium\chromedriver_win32\chromedriver.exe'
 driver = webdriver.Chrome(service=service, options=opt)
 
 
-url = 'https://animethemes.moe/year/2022/summer'
+url = 'https://animethemes.moe/year/2022/fall'
 
 driver.get(url)
 
