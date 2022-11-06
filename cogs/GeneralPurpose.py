@@ -8,6 +8,7 @@ import aiohttp
 import openai
 import art
 import ffmpeg
+import time
 from PIL import Image
 from io import BytesIO
 from pytube import YouTube
