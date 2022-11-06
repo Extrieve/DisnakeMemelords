@@ -408,7 +408,9 @@ class GeneralPurpose(commands.Cog):
 
     @commands.slash_command(name='generate-image', description='Generate an image with a prompt')
     async def generate_image(self, inter, prompt: str = '') -> None:
-        
+
+        openai.api_key = os.environ.get('open_ai')
+        print(openai.api_key)
         if not prompt:
             prompt = 'a white siamese cat'
             await inter.response.defer(with_message='No prompt provided, using default prompt\nLoading...', ephemeral=False)
