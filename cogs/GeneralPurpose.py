@@ -5,6 +5,7 @@ import json
 import sys, os
 import validators
 import aiohttp
+import openai
 import art
 import ffmpeg
 from PIL import Image
@@ -24,6 +25,11 @@ class GeneralPurpose(commands.Cog):
     Templates = commands.option_enum(ame_endpoints)
     Horoscope = commands.option_enum(horoscope)
     movie_clips = json.load(open(f'db/movies_db.json', encoding='utf8'))
+
+    def __init__(self, bot):
+        self.bot = bot
+        openai.api_key = os.environ['open_ai']
+        # self.test1.start()
 
     def compress_video(self, video_full_path, size_upper_bound, two_pass=True, filename_suffix='cps_'):
         """
@@ -397,6 +403,26 @@ class GeneralPurpose(commands.Cog):
         file = disnake.File('db/youtube.mp4', filename='youtube.mp4')
 
         return await inter.followup.send(file=file, ephemeral=False)
+
+
+    @commands.slash_command(name='generate-image', description='Generate an image with a prompt')
+    async def generate_image(self, inter, prompt: str = '') -> None:
+        
+        if not prompt:
+            prompt = 'a white siamese cat'
+            await inter.response.defer(with_message='No prompt provided, using default prompt\nLoading...', ephemeral=False)
+
+        else:
+            await inter.response.defer(with_message='Loading...', ephemeral=False)
+
+        # we need to wait for the response before we can send the message
+        response = openai.Image.create(prompt=prompt, n=1, size='1024x1024')
+        # wait until be get the response url
+        while not response:
+            time.sleep(0.3)
+            print('waiting for response url')
+
+        return await inter.followup.send(response['data'][0]['url'], ephemeral=False)
 
     
     # @commands.slash_command(name='ascii-art', description='Produce ascii art from an image')
