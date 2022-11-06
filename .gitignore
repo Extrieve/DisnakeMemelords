@@ -50,4 +50,5 @@ config.py
 
 
 # log files
-*.log
+*.log*
+
