@@ -7,8 +7,6 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from PIL import Image
 import disnake
-import asyncio
-import os
 import validators
 import time
 import requests

@@ -6,7 +6,6 @@ import sys, os
 import validators
 import aiohttp
 import art
-import asyncio
 import time
 import ffmpeg
 import openai
