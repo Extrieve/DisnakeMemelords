@@ -44,6 +44,9 @@ class Automation(commands.Cog):
         if 'twitter' not in url:
             return await inter.response.send_message('Please provide a valid Twitter URL', ephemeral=True)
 
+        # Only using the base url for the tweet
+        url = url.split('?')[0]
+
         await inter.response.defer(with_message='Loading...', ephemeral=False)
 
         site = 'https://www.savetweetvid.com/'
