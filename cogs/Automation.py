@@ -31,7 +31,7 @@ class Automation(commands.Cog):
         'Brazil', '🇧🇷'), 'las': ('LAS', '🇵🇪'), 'lan': ('LAN', '🇲🇽')}
 
     flags = [item[1] for item in regions.values()]
-    # regions_copy = regions.copy()
+    regions_copy = regions.copy()
     Regions = commands.option_enum([item for item in regions.keys()])
 
     def __init__(self, bot):
@@ -77,6 +77,9 @@ class Automation(commands.Cog):
 
         if 'twitter' not in url:
             return await inter.response.send_message('Please provide a valid Twitter URL', ephemeral=True)
+
+        # Only using the base url for the tweet
+        url = url.split('?')[0]
 
         await inter.response.defer(with_message='Loading...', ephemeral=False)
 
