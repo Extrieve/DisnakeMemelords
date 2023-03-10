@@ -21,9 +21,12 @@ class Automation(commands.Cog):
     opt.add_argument('--disable-dev-shm-usage')
     resolution = "--window-size=1920,1080"
     opt.add_argument(resolution)
-    service = Service(r'/home/nick/Documents/chromedriver') # Linux path
-    # service = Service(r'C:\Selenium\chromedriver.exe') # Windows Path
-    driver = webdriver.Chrome(service=service, options=opt)
+    try:
+        service = Service(r'/home/nick/Documents/chromedriver') # Linux path
+        # service = Service(r'C:\Selenium\chromedriver.exe') # Windows Path
+        driver = webdriver.Chrome(service=service, options=opt)
+    except Exception:
+        print('WebdriverException: Please check the path of the chromedriver')
 
     regions = {'na': ('North America', '🇺🇸'), 'euw': ('Europe West', '🇪🇺'), 'br': (
         'Brazil', '🇧🇷'), 'las': ('LAS', '🇵🇪'), 'lan': ('LAN', '🇲🇽')}
@@ -81,30 +84,35 @@ class Automation(commands.Cog):
 
         await inter.response.defer(with_message='Loading...', ephemeral=False)
 
-        site = 'https://www.savetweetvid.com/'
-        self.driver.get(site)
-        element = self.driver.find_element(By.NAME, 'url')
-        element.send_keys(url)
-        element.submit()
 
-        # wait until class 'card-text' is loaded
-        WebDriverWait(self.driver, 20).until(
-            EC.presence_of_element_located((By.CLASS_NAME, 'card-text'))
-        )
+        try:
+            # wait until class 'card-text' is loaded
+            site = 'https://www.savetweetvid.com/'
+            self.driver.get(site)
+            element = self.driver.find_element(By.NAME, 'url')
+            element.send_keys(url)
+            element.submit()
+            WebDriverWait(self.driver, 20).until(
+                EC.presence_of_element_located((By.CLASS_NAME, 'card-text'))
+            )
 
-        # store table tag
-        table = self.driver.find_element(By.TAG_NAME, 'table')
+            # store table tag
+            table = self.driver.find_element(By.TAG_NAME, 'table')
 
-        links = []
-        # append the links inside the table to the list
-        for row in table.find_elements(By.TAG_NAME, 'tr'):
-            for link in row.find_elements(By.TAG_NAME, 'a'):
-                links.append(link.get_attribute('href'))
+            links = []
+            # append the links inside the table to the list
+            for row in table.find_elements(By.TAG_NAME, 'tr'):
+                for link in row.find_elements(By.TAG_NAME, 'a'):
+                    links.append(link.get_attribute('href'))
 
-        self.driver.close()
-        self.driver.quit()
+            self.driver.close()
+            self.driver.quit()
 
-        return await inter.followup.send(links[0], ephemeral=False)
+            return await inter.followup.send(links[0], ephemeral=False)
+        
+        except Exception:
+            url = url.replace('twitter', 'twxtter')
+            return await inter.followup.send(f'Embbed server failed, using twxtter embbed...\n{url}', ephemeral=False)
 
 
     @commands.slash_command(name='youtube-mp4', description='Get the mp4 of a youtube video')
