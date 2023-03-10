@@ -15,7 +15,6 @@ class Automation(commands.Cog):
     """Automation Cog dedicated to scrape data using Selenium and/or BeautifulSoup."""
 
     chrome_options = webdriver.ChromeOptions()
-
     resolution = "--window-size=1920,1080"
     chrome_options.add_argument(resolution)
     chrome_options.add_argument("--headless")
@@ -36,7 +35,7 @@ class Automation(commands.Cog):
         self.bot = bot
 
     @commands.slash_command(name='twitter-embed-video', description='Get the embed video of a tweet')
-    async def twitter_embed_video(self, inter, url):
+    async def twitter_embed_video(self, inter, url: str) -> None:
         """Get the embed video of a tweet."""
         if not validators.url(url):
             return await inter.response.send_message('Please provide a valid URL', ephemeral=True)
@@ -49,30 +48,35 @@ class Automation(commands.Cog):
 
         await inter.response.defer(with_message='Loading...', ephemeral=False)
 
-        site = 'https://www.savetweetvid.com/'
-        self.driver.get(site)
-        element = self.driver.find_element(By.NAME, 'url')
-        element.send_keys(url)
-        element.submit()
 
-        # wait until class 'card-text' is loaded
-        WebDriverWait(self.driver, 20).until(
-            EC.presence_of_element_located((By.CLASS_NAME, 'card-text'))
-        )
+        try:
+            # wait until class 'card-text' is loaded
+            site = 'https://www.savetweetvid.com/'
+            self.driver.get(site)
+            element = self.driver.find_element(By.NAME, 'url')
+            element.send_keys(url)
+            element.submit()
+            WebDriverWait(self.driver, 20).until(
+                EC.presence_of_element_located((By.CLASS_NAME, 'card-text'))
+            )
 
-        # store table tag
-        table = self.driver.find_element(By.TAG_NAME, 'table')
+            # store table tag
+            table = self.driver.find_element(By.TAG_NAME, 'table')
 
-        links = []
-        # append the links inside the table to the list
-        for row in table.find_elements(By.TAG_NAME, 'tr'):
-            for link in row.find_elements(By.TAG_NAME, 'a'):
-                links.append(link.get_attribute('href'))
+            links = []
+            # append the links inside the table to the list
+            for row in table.find_elements(By.TAG_NAME, 'tr'):
+                for link in row.find_elements(By.TAG_NAME, 'a'):
+                    links.append(link.get_attribute('href'))
 
-        self.driver.close()
-        self.driver.quit()
+            self.driver.close()
+            self.driver.quit()
 
-        return await inter.followup.send(links[0], ephemeral=False)
+            return await inter.followup.send(links[0], ephemeral=False)
+        
+        except Exception:
+            url = url.replace('twitter', 'twxtter')
+            return await inter.followup.send(f'Embbed server failed, using twxtter embbed...\n{url}', ephemeral=False)
         
 
     @commands.slash_command(name='opgg-livematch', description='Get the live match of an op.gg summoner')
