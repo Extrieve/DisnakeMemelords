@@ -418,7 +418,8 @@ class GeneralPurpose(commands.Cog):
         
         yt = YouTube(url)
         length = yt.length
-
+        out_path_trimmed = None
+        
         await inter.response.defer(with_message='Loading...', ephemeral=False)
 
         stream = yt.streams.filter(progressive=True, file_extension='mp4').order_by('resolution').asc().first()
