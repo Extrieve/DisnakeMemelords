@@ -32,6 +32,32 @@ class GeneralPurpose(commands.Cog):
         openai.api_key = os.environ['open_ai']
         # self.test1.start()
 
+    def trim_video(self, in_file: str, out_file: str, start: int, end: int):
+        
+        if os.path.exists(out_file):
+            os.remove(out_file)
+
+        in_file_probe_result = ffmpeg.probe(in_file)
+        in_file_duration = in_file_probe_result.get(
+            "format", {}).get("duration", None)
+        print(in_file_duration)
+
+        input_stream = ffmpeg.input(in_file)
+
+        pts = "PTS-STARTPTS"
+        video = input_stream.trim(start=start, end=end).setpts(pts)
+        audio = (input_stream
+                .filter_("atrim", start=start, end=end)
+                .filter_("asetpts", pts))
+        video_and_audio = ffmpeg.concat(video, audio, v=1, a=1)
+        output = ffmpeg.output(video_and_audio, out_file, format="mp4")
+        output.run()
+
+        out_file_probe_result = ffmpeg.probe(out_file)
+        out_file_duration = out_file_probe_result.get(
+            "format", {}).get("duration", None)
+        print(out_file_duration)
+
     def compress_video(self, video_full_path, size_upper_bound, two_pass=True, filename_suffix='cps_'):
         """
         Compress video file to max-supported size.
@@ -379,12 +405,20 @@ class GeneralPurpose(commands.Cog):
 
     
     @commands.slash_command(name='youtube-embed', description='Embed a youtube video')
-    async def youtube_embed(self, inter, url: str) -> None: 
+    async def youtube_embed(self, inter, url: str, start: int = 0, end: int = 0) -> None: 
 
         if not validators.url(url) or not 'youtube.com' in url:
             return await inter.response.send_message('Please provide a valid url', ephemeral=True)
-
+        
+        if start != 0 or end:
+            try:
+                start, end = int(start), int(end)
+            except ValueError:
+                return await inter.response.send_message('Please provide a valid start and end time', ephemeral=True)
+        
         yt = YouTube(url)
+        length = yt.length
+
         await inter.response.defer(with_message='Loading...', ephemeral=False)
 
         stream = yt.streams.filter(progressive=True, file_extension='mp4').order_by('resolution').asc().first()
@@ -392,17 +426,33 @@ class GeneralPurpose(commands.Cog):
         if not stream:
             return await inter.followup.send('No mime type found for your video.', ephemeral=True)
 
+        print("Downloading video...")
         stream.download(filename='youtube.mp4', output_path='db/')
+        print("Finished download!")
+        
+        vid_abs_path = os.path.abspath('db/youtube.mp4')
+        print(vid_abs_path)
 
-        # check if size is larger than 8mb
-        if os.path.getsize('db/youtube.mp4') > 8388608:
+        if (start and not end) and end and end <= length:
+            print("Trimming video...")
+            self.trim_video(vid_abs_path, 'db/trim_vid.mp4', int(start), int(end) + 3)
+            print("Finished trimming!")
+
+        size = os.path.getsize('db/youtube.mp4')
+
+        # check if size is larger than 8mb and less than 50mb
+        if size > 8388608 and size < 52428800:
             await inter.followup.send('Your video is too large to send normally, compressing your video...', ephemeral=True)
             self.compress_video('db/youtube.mp4', 8 * 1000)
             file = disnake.File('db/youtubecps_.mp4', filename='youtubecps_.mp4')
-            return await inter.followup.send(file=file, ephemeral=False)
 
-        file = disnake.File('db/youtube.mp4', filename='youtube.mp4')
+            size = os.path.getsize('db/youtube.mp4')
+            if size > 52428800:
+                return await inter.followup.send(file=file, ephemeral=False)
+            else:
+                return await inter.followup.send('Your video is too large to send normally, please try a different video.', ephemeral=True)
 
+        file = disnake.File('db/youtube.mp4', filename=f'{stream.title}.mp4') if not end else disnake.File('db/trim_vid.mp4', filename=f'{stream.title}.mp4')
         return await inter.followup.send(file=file, ephemeral=False)
 
 
