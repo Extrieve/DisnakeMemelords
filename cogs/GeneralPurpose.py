@@ -419,7 +419,7 @@ class GeneralPurpose(commands.Cog):
         yt = YouTube(url)
         length = yt.length
         out_path_trimmed = None
-        
+
         await inter.response.defer(with_message='Loading...', ephemeral=False)
 
         stream = yt.streams.filter(progressive=True, file_extension='mp4').order_by('resolution').asc().first()
@@ -434,7 +434,7 @@ class GeneralPurpose(commands.Cog):
         vid_abs_path = os.path.abspath('db/youtube.mp4')
         print(vid_abs_path)
 
-        if (start and not end) and end and end <= length:
+        if end and end <= length:
             print("Trimming video...")
             out_path_trimmed = os.path.abspath('db/trim_vid.mp4')
             self.trim_video(vid_abs_path, out_path_trimmed, int(start), int(end) + 3)
