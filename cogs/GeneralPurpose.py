@@ -435,11 +435,12 @@ class GeneralPurpose(commands.Cog):
 
         if (start and not end) and end and end <= length:
             print("Trimming video...")
-            out_path = os.path.abspath('db/trim_vid.mp4')
-            self.trim_video(vid_abs_path, out_path, int(start), int(end) + 3)
+            out_path_trimmed = os.path.abspath('db/trim_vid.mp4')
+            self.trim_video(vid_abs_path, out_path_trimmed, int(start), int(end) + 3)
+            print(out_path_trimmed)
             print("Finished trimming!")
 
-        size = os.path.getsize('db/youtube.mp4')
+        size = os.path.getsize(out_path_trimmed) if out_path_trimmed else os.path.getsize('db/youtube.mp4')
 
         # check if size is larger than 8mb and less than 50mb
         if size > 8388608 and size < 52428800:
@@ -453,7 +454,7 @@ class GeneralPurpose(commands.Cog):
             else:
                 return await inter.followup.send('Your video is too large to send normally, please try a different video.', ephemeral=True)
 
-        file = disnake.File('db/youtube.mp4', filename=f'{stream.title}.mp4') if not end else disnake.File('db/trim_vid.mp4', filename=f'{stream.title}.mp4')
+        file = disnake.File('db/youtube.mp4', filename=f'{stream.title}.mp4') if not out_path_trimmed else disnake.File(out_path_trimmed, filename=f'{stream.title}.mp4')
         return await inter.followup.send(file=file, ephemeral=False)
 
 
