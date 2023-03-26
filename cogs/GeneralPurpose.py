@@ -437,7 +437,7 @@ class GeneralPurpose(commands.Cog):
         if end and end <= length:
             print("Trimming video...")
             out_path_trimmed = os.path.abspath('db/trim_vid.mp4')
-            self.trim_video(vid_abs_path, out_path_trimmed, int(start), int(end) + 3)
+            self.trim_video(vid_abs_path, out_path_trimmed, int(start), int(end))
             print(out_path_trimmed)
             print("Finished trimming!")
 
