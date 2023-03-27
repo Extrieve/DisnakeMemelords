@@ -11,7 +11,7 @@ class Listener(commands.Cog):
         if message.author == self.bot.user:
             return
         
-        if 'twitter.com' in message.content:
+        if 'twitter.com' in message.content and 'twxtter.com' not in message.content:
             author = message.author
             new_embbed = message.content.replace('twitter', 'twxtter')
             await message.reply(f'New Tweet from: {author.mention}\nEmbbeding to twxtter\n{new_embbed}', mention_author=True)
