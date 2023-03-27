@@ -11,7 +11,7 @@ class Listener(commands.Cog):
         if message.author == self.bot.user:
             return
         
-        if 'twxtter.com' in message.content:
+        if 'twxtter.com' in message.content or 'fxtwitter.com' in message.content:
             return
         
         if 'twitter.com' in message.content:    
