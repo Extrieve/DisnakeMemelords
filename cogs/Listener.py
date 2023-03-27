@@ -7,10 +7,14 @@ class Listener(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
+
         if message.author == self.bot.user:
             return
         
-        if 'twitter.com' in message.content and 'twxtter.com' not in message.content:
+        if 'twxtter.com' in message.content or 'fxtwitter.com' in message.content:
+            return
+        
+        if 'twitter.com' in message.content:    
             author = message.author
             new_embbed = message.content.replace('twitter', 'twxtter')
             await message.reply(f'New Tweet from: {author.mention}\nEmbbeding to twxtter\n{new_embbed}', mention_author=True)
