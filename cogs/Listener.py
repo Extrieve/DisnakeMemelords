@@ -1,7 +1,6 @@
 from disnake.ext import commands
 
 class Listener(commands.Cog):
-    # If someone says "hello" in a channel, the bot will reply with "hi"
     def __init__(self, bot):
         self.bot = bot
 
@@ -11,7 +10,7 @@ class Listener(commands.Cog):
         if message.author == self.bot.user:
             return
         
-        if 'twxtter.com' in message.content or 'fxtwitter.com' in message.content:
+        if 'twxtter.com' in message.content or 'fxtwitter.com' in message.content or 'vxtwitter.com' in message.content:
             return
         
         if 'twitter.com' in message.content:    
