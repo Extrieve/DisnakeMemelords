@@ -9,6 +9,7 @@ import openai
 import art
 import ffmpeg
 import time
+import string
 from PIL import Image
 from io import BytesIO
 from pytube import YouTube
@@ -411,14 +412,15 @@ class GeneralPurpose(commands.Cog):
             return await inter.response.send_message('Please provide a valid url', ephemeral=True)
         
         if start != 0 or end:
-            try:
-                start, end = int(start), int(end)
-            except ValueError:
+            # If not numeric, ValueError will be raised, check if start and end are numeric
+            if start in string.digits() and end in string.digits():
+                start = int(start)
+                end = int(end)
+            else:
                 return await inter.response.send_message('Please provide a valid start and end time', ephemeral=True)
-        
+            
         yt = YouTube(url)
         length = yt.length
-        out_path_trimmed = None
 
         await inter.response.defer(with_message='Loading...', ephemeral=False)
 
@@ -436,12 +438,10 @@ class GeneralPurpose(commands.Cog):
 
         if end and end <= length:
             print("Trimming video...")
-            out_path_trimmed = os.path.abspath('db/trim_vid.mp4')
-            self.trim_video(vid_abs_path, out_path_trimmed, int(start), int(end))
-            print(out_path_trimmed)
+            self.trim_video(vid_abs_path, 'db/trim_vid.mp4', start, end)
             print("Finished trimming!")
 
-        size = os.path.getsize(out_path_trimmed) if out_path_trimmed else os.path.getsize('db/youtube.mp4')
+        size = os.path.getsize('db/youtube.mp4')
 
         # check if size is larger than 8mb and less than 50mb
         if size > 8388608 and size < 52428800:
@@ -455,7 +455,7 @@ class GeneralPurpose(commands.Cog):
             else:
                 return await inter.followup.send('Your video is too large to send normally, please try a different video.', ephemeral=True)
 
-        file = disnake.File('db/youtube.mp4', filename=f'{stream.title}.mp4') if not out_path_trimmed else disnake.File(out_path_trimmed, filename=f'{stream.title}.mp4')
+        file = disnake.File('db/youtube.mp4', filename=f'{stream.title}.mp4') if not end else disnake.File('db/trim_vid.mp4', filename=f'{stream.title}.mp4')
         return await inter.followup.send(file=file, ephemeral=False)
 
 
