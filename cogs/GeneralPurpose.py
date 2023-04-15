@@ -9,6 +9,7 @@ import art
 import time
 import ffmpeg
 import openai
+import string
 from PIL import Image
 from io import BytesIO
 from pytube import YouTube
@@ -405,11 +406,13 @@ class GeneralPurpose(commands.Cog):
             return await inter.response.send_message('Please provide a valid url', ephemeral=True)
         
         if start != 0 or end:
-            try:
-                start, end = int(start), int(end)
-            except ValueError:
+            # If not numeric, ValueError will be raised, check if start and end are numeric
+            if start in string.digits() and end in string.digits():
+                start = int(start)
+                end = int(end)
+            else:
                 return await inter.response.send_message('Please provide a valid start and end time', ephemeral=True)
-        
+            
         yt = YouTube(url)
         length = yt.length
 
@@ -429,7 +432,7 @@ class GeneralPurpose(commands.Cog):
 
         if end and end <= length:
             print("Trimming video...")
-            self.trim_video(vid_abs_path, 'db/trim_vid.mp4', int(start), int(end) + 3)
+            self.trim_video(vid_abs_path, 'db/trim_vid.mp4', start, end)
             print("Finished trimming!")
 
         size = os.path.getsize('db/youtube.mp4')
