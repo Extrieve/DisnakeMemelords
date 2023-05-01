@@ -141,6 +141,35 @@ class Automation(commands.Cog):
     async def opgg_livematch(self, inter, summoner: str, region: Regions) -> None: 
 
         return await inter.response.send_message(f'{summoner} {region}', ephemeral=True)
+    
+
+    @commands.slash_command(name='twitch-clip', description='Get the mp4 of a twitch clip')
+    async def twitch_clip(self, inter, url: str) -> None:
+        if not validators.url(url):
+            return await inter.response.send_message('Please provide a valid URL', ephemeral=True)
+        
+        if 'twitch' not in url:
+            return await inter.response.send_message('Please provide a valid Twitch URL', ephemeral=True)
+        
+        await inter.response.defer(with_message='Loading...', ephemeral=False)
+
+        website = 'https://clipsey.com/'
+
+        self.driver.get(website)
+        input_box = self.driver.find_element(By.CLASS_NAME, 'clip-url-input')
+        input_box.send_keys(url)
+
+        download_button = self.driver.find_element(By.CLASS_NAME, 'get-download-link-button')
+        download_button.click()
+
+        WebDriverWait(self.driver, 20).until(EC.visibility_of_element_located((By.TAG_NAME, 'img')))
+
+        a_tags = self.driver.find_elements(By.TAG_NAME, 'a')
+        for a in a_tags:
+            if a.get_attribute('href').startswith('https://clips-media-assets2.twitch.tv/'):
+                return await inter.followup.send(a.get_attribute('href'), ephemeral=False)
+            
+        return await inter.followup.send('Something went wrong', ephemeral=False)
 
 
 def setup(bot):
