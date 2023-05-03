@@ -473,6 +473,17 @@ class GeneralPurpose(commands.Cog):
         return await inter.followup.send(response['data'][0]['url'], ephemeral=False)
         
 
+    @commands.slash_command(name='youtube-thumbnail', description='Get the thumbnail of a youtube video')
+    async def youtube_thumbnail(self, inter, url: str) -> None:
+        if not validators.url(url) or not 'youtube.com' in url:
+            return await inter.response.send_message('Please provide a valid url', ephemeral=True)
+
+        yt = YouTube(url)
+        thumbnail = yt.thumbnail_url
+
+        return await inter.response.send_message(thumbnail, ephemeral=False)
+
+
     # @commands.slash_command(name='weather', description='Get the live weather of a city')
     # async def weather(self, inter, city: str) -> None:
     #     await inter.response.defer(with_message='Loading...', ephemeral=False)
