@@ -165,7 +165,6 @@ class GeneralPurpose(commands.Cog):
                 if resp.status != 200:
                     return await inter.response.send_message('Something went wrong', ephemeral=True)
                 data = await resp.json()
-                print(data)
                 res = 'https://gotiny.cc/' + data[0]['code']
                 await inter.response.send_message(res)
 
@@ -400,21 +399,22 @@ class GeneralPurpose(commands.Cog):
 
     
     @commands.slash_command(name='youtube-embed', description='Embed a youtube video')
-    async def youtube_embed(self, inter, url: str, start: int = 0, end: int = 0) -> None: 
+    async def youtube_embed(self, inter, url: str) -> None: 
 
         if not validators.url(url) or not 'youtube.com' in url:
             return await inter.response.send_message('Please provide a valid url', ephemeral=True)
         
-        if start != 0 or end:
-            # If not numeric, ValueError will be raised, check if start and end are numeric
-            if start in string.digits() and end in string.digits():
-                start = int(start)
-                end = int(end)
-            else:
-                return await inter.response.send_message('Please provide a valid start and end time', ephemeral=True)
+        # if start or end:
+        #     # If not numeric, ValueError will be raised, check if start and end are numeric
+        #     if isinstance(start, str) and isinstance(end, str) and start.isnumeric() and end.isnumeric():
+        #         # start = int(start)
+        #         # end = int(end)
+        #         pass
+        #     else:
+        #         return await inter.response.send_message('Please provide a valid start and end time', ephemeral=True)
             
         yt = YouTube(url)
-        length = yt.length
+        # length = yt.length
 
         await inter.response.defer(with_message='Loading...', ephemeral=False)
 
@@ -427,13 +427,11 @@ class GeneralPurpose(commands.Cog):
         stream.download(filename='youtube.mp4', output_path='db/')
         print("Finished download!")
         
-        vid_abs_path = os.path.abspath('db/youtube.mp4')
-        print(vid_abs_path)
-
-        if end and end <= length:
-            print("Trimming video...")
-            self.trim_video(vid_abs_path, 'db/trim_vid.mp4', start, end)
-            print("Finished trimming!")
+        # vid_abs_path = os.path.abspath('db/youtube.mp4')
+        # if end and end <= length:
+        #     print("Trimming video...")
+        #     self.trim_video(vid_abs_path, 'db/trim_vid.mp4', start, end)
+        #     print("Finished trimming!")
 
         size = os.path.getsize('db/youtube.mp4')
 
@@ -449,7 +447,8 @@ class GeneralPurpose(commands.Cog):
             else:
                 return await inter.followup.send('Your video is too large to send normally, please try a different video.', ephemeral=True)
 
-        file = disnake.File('db/youtube.mp4', filename=f'{stream.title}.mp4') if not end else disnake.File('db/trim_vid.mp4', filename=f'{stream.title}.mp4')
+        # file = disnake.File('db/youtube.mp4', filename=f'{stream.title}.mp4') if not end else disnake.File('db/trim_vid.mp4', filename=f'{stream.title}.mp4')
+        file = disnake.File('db/youtube.mp4', filename=f'{stream.title}.mp4')
         return await inter.followup.send(file=file, ephemeral=False)
 
 
