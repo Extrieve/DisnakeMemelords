@@ -105,13 +105,13 @@ class Automation(commands.Cog):
                 for link in row.find_elements(By.TAG_NAME, 'a'):
                     links.append(link.get_attribute('href'))
 
-            self.driver.close()
-            self.driver.quit()
+            # self.driver.close()
+            # self.driver.quit()
 
             return await inter.followup.send(links[0], ephemeral=False)
         
         except Exception:
-            url = url.replace('twitter', 'twxtter')
+            url = url.replace('twitter', 'fxtwitter')
             return await inter.followup.send(f'Embbed server failed, using twxtter embbed...\n{url}', ephemeral=False)
 
 

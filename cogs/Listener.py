@@ -15,7 +15,7 @@ class Listener(commands.Cog):
         
         if 'twitter.com' in message.content:    
             author = message.author
-            new_embbed = message.content.replace('twitter', 'twxtter')
+            new_embbed = message.content.replace('twitter', 'fxtwitter')
             await message.reply(f'New Tweet from: {author.mention}\nEmbbeding to twxtter\n{new_embbed}', mention_author=True)
             await message.delete()
 
