@@ -15,9 +15,11 @@ A lot of the bot functionality is still in development. TODO: Add music function
 
 Before running the application for yourself you must have a discord account and a bot account.
 Make sure you have the correct permissions to run the bot.
-Make sure you configure your own bot token in the config.py file (this is gitignored for privacy concerns).
+Make sure you configure your own bot token in the config.py file (this is gitignored for security concerns).
 
 To run the application locally, run the bot.py file.
  ```python
 python3 bot.py
  ```
+ 
+ Make sure you install the selenium dependencies in your operating system in order to correctly add the Automation Cog.
