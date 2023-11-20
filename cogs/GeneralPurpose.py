@@ -1,18 +1,21 @@
-from disnake.ext import commands, tasks
-import disnake
-import random
 import json
-import sys, os
-import validators
+import os
+import random
+import string
+import sys
+import time
+from io import BytesIO
+
 import aiohttp
 import art
-import time
+import disnake
 import ffmpeg
 import openai
-import string
+import validators
+from disnake.ext import commands, tasks
 from PIL import Image
-from io import BytesIO
 from pytube import YouTube
+
 
 class GeneralPurpose(commands.Cog):
 
@@ -21,7 +24,8 @@ class GeneralPurpose(commands.Cog):
     cwd = os.getcwd()
     sys.path.append(f'{cwd}..')
     from config import ame_token, bg_key, open_ai
-    from setup import ame_endpoints, speech_bubble, horoscope
+
+    from setup import ame_endpoints, horoscope, speech_bubble
     Templates = commands.option_enum(ame_endpoints)
     Horoscope = commands.option_enum(horoscope)
     movie_clips = json.load(open(f'db/movies_db.json', encoding='utf8'))
@@ -479,6 +483,9 @@ class GeneralPurpose(commands.Cog):
 
         yt = YouTube(url)
         thumbnail = yt.thumbnail_url
+
+        if not thumbnail:
+            return await inter.response.send_message('No thumbnail found', ephemeral=True)
 
         return await inter.response.send_message(thumbnail, ephemeral=False)
 
