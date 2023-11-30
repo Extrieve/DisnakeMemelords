@@ -26,7 +26,8 @@ class Listener(commands.Cog):
             # if day_content choice is a list, choose a random element
             if isinstance(day_content, list):
                 day_content = random.choice(day_content)
-            
+                await message.reply(day_content, mention_author=True)
+
             return
         
         if 'twxtter.com' in message.content or 'fxtwitter.com' in message.content or 'vxtwitter.com' in message.content:
