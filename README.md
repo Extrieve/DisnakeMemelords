@@ -1,25 +1,36 @@
 # DisnakeMemelords
- Disnake discord bot for personal discord server.
-This project is a refactor/migration process from [MemelordsBot](https://github.com/Extrieve/MemelordsBot)
-Moving this project from discord.py to Disnake because of new features such as slash_commands.
 
-Some of the major bot functionality includes:
-* **Anime**: Search for anime and get information about it. Look for anime openings, endings, and more.
-* **Search**: Search for images, word definitions, and more.
-* **Fun**: Get random images, quotes, and more.
-* **General Purpose**: Get information about the server, get a random image, and more.
-* **Admin**: Get information about the server, moderate the server, and more.
+Disnake discord bot for personal discord server.
 
-The bots databases were achieved by using scraping libraries such as Selenium and BeautifulSoup.
-A lot of the bot functionality is still in development. TODO: Add music functionality.
+This project is a refactor/migration process from [MemelordsBot](https://github.com/Extrieve/MemelordsBot), moving this project from discord.py to Disnake to leverage new features such as slash_commands.
 
-Before running the application for yourself you must have a discord account and a bot account.
-Make sure you have the correct permissions to run the bot.
-Make sure you configure your own bot token in the config.py file (this is gitignored for security concerns).
+## Major Bot Functionality
 
-To run the application locally, run the bot.py file.
- ```python
+- **Anime**: Search for anime and get information about it, including openings, endings, and more.
+- **Search**: Search for images, word definitions, and more.
+- **Fun**: Get random images, quotes, and more.
+- **General Purpose**: Retrieve server information, generate random images, and more.
+- **Admin**: Access server information, moderate the server, and more.
+
+## Database and Libraries
+
+The bots' databases were achieved using scraping libraries like Selenium and BeautifulSoup.
+
+## Development Status
+
+A lot of the bot functionality is still under development. TODO: Add music functionality.
+
+## Setup and Configuration
+
+Before running the application, ensure you have:
+
+- A Discord account and a bot account.
+- The correct permissions to run the bot.
+- Your bot token configured in the `config.py` file (this is gitignored for security concerns).
+
+## Running the Application
+
+To run the application locally, execute the following command:
+
+```python
 python3 bot.py
- ```
- 
- Make sure you install the selenium dependencies in your operating system in order to correctly add the Automation Cog.
